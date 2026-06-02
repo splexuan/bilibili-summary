@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="/static/app.png">
+<title>知识库 - B站视频总结</title>
+<style>
+:root {
+  --bg: #F8F9FB; --surface: #FFFFFF; --text: #1E293B; --text-sec: #64748B;
+  --text-muted: #94A3B8; --border: #E2E8F0; --pink: #EC4899;
+  --purple: #8B5CF6; --radius: 12px; --font: -apple-system, "Noto Sans SC", sans-serif;
+  --error: #EF4444;
+}
+[data-theme="dark"] {
+  --bg: #0B1120; --surface: #1A2332; --text: #E2E8F0; --text-sec: #94A3B8;
+  --text-muted: #64748B; --border: #2D3A4A; --error: #F87171;
+}
+[data-theme="dark"] body { background: var(--bg); color: var(--text); }
+[data-theme="dark"] .nav a:hover { background: #1E293B; }
+[data-theme="dark"] .panel-head input { background: #111827; }
+[data-theme="dark"] .modal { background: var(--surface); }
+[data-theme="dark"] .modal-body { color: var(--text); }
+[data-theme="dark"] .overlay { background: rgba(0,0,0,.7); }
+[data-theme="dark"] .kbd { background: #1E293B; }
+[data-theme="dark"] .kb-close { background: #1E293B; }
+[data-theme="dark"] .kb-close:hover { background: rgba(239,68,68,.15); }
+[data-theme="dark"] .msg.user { background: #2563EB; color: #EFF6FF; }
+[data-theme="dark"] .msg.ai { background: var(--surface); border-color: var(--border); color: var(--text); }
+[data-theme="dark"] .video-item:hover { background: #1E293B; }
+[data-theme="dark"] .video-item.active { background: rgba(139,92,246,.15); border-left-color: var(--purple); color: var(--text); }
+[data-theme="dark"] .session-item:hover { background: #1E293B; }
+[data-theme="dark"] .session-item.active { background: rgba(139,92,246,.15); border-left-color: var(--purple); color: var(--text); }
+[data-theme="dark"] .load-more:hover { background: rgba(139,92,246,.1); }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; }
+a { color: var(--pink); text-decoration: none; }
+
+/* Nav */
+.nav { display: flex; align-items: center; padding: 10px 20px; background: var(--surface); border-bottom: 1px solid var(--border); gap: 12px; flex-shrink: 0; }
+.nav h1 { font-size: 16px; font-weight: 800; margin-right: auto; color: var(--purple); }
+.nav a { font-size: 13px; color: var(--text-sec); padding: 6px 12px; border-radius: 8px; transition: .2s; }
+.nav a:hover { background: #F1F5F9; color: var(--text); }
+
+/* Layout */
+.layout { display: flex; flex: 1; overflow: hidden; }
+
+/* Sidebar */
+.sidebar { width: 300px; min-width: 260px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+.sidebar-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.sidebar-tab { flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text-muted); border-bottom: 2px solid transparent; transition: .2s; }
+.sidebar-tab.active { color: var(--purple); border-bottom-color: var(--purple); }
+.sidebar-panel { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+.sidebar-panel.active { display: flex; }
+.panel-head { padding: 12px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.panel-head input { flex: 1; padding: 7px 10px; border: 1.5px solid var(--border); border-radius: 7px; font-size: 12px; font-family: var(--font); outline: none; background: var(--bg); }
+.panel-head input:focus { border-color: var(--purple); }
+.panel-head button { font-size: 12px; border: 1.5px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; background: var(--bg); color: var(--pink); white-space: nowrap; }
+.panel-count { font-size: 12px; color: var(--text-muted); padding: 6px 14px; flex-shrink: 0; }
+
+/* Video list */
+.video-list, .chat-session-list { flex: 1; overflow-y: auto; }
+.load-more { display: block; width: 100%; padding: 10px; text-align: center; font-size: 12px; color: var(--purple); cursor: pointer; background: none; border: none; border-top: 1px solid var(--border); }
+.load-more:hover { background: #F5F3FF; }
+.load-more:disabled { color: var(--text-muted); cursor: default; }
+
+.video-item { padding: 12px 14px; cursor: pointer; display: flex; align-items: center; gap: 10px; border-left: 3px solid transparent; transition: .15s; }
+.video-item:hover { background: #F1F5F9; }
+.video-item.active { background: #F5F3FF; border-left-color: var(--purple); }
+.video-item .vi-thumb { width: 56px; height: 32px; border-radius: 5px; object-fit: cover; background: var(--border); flex-shrink: 0; }
+.video-item .vi-info { flex: 1; min-width: 0; }
+.video-item .vi-title { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.video-item .vi-meta { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+
+/* Chat session item */
+.session-item { padding: 10px 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; border-left: 3px solid transparent; transition: .15s; }
+.session-item:hover { background: #F1F5F9; }
+.session-item.active { background: #F5F3FF; border-left-color: var(--purple); font-weight: 600; }
+.session-item .si-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; }
+.session-item .si-del { opacity: 0; font-size: 11px; color: #EF4444; cursor: pointer; padding: 2px 4px; }
+.session-item:hover .si-del { opacity: 1; }
+
+/* Main chat */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.main-header { padding: 14px 24px; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; }
+.main-header h2 { font-size: 16px; font-weight: 700; color: var(--purple); }
+.main-header span { font-size: 12px; color: var(--text-muted); }
+.empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); gap: 12px; }
+.empty-state svg { opacity: .3; }
+.chat-body { flex: 1; overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; }
+.chat-body::-webkit-scrollbar, .video-list::-webkit-scrollbar, .chat-session-list::-webkit-scrollbar { width: 4px; }
+.chat-body::-webkit-scrollbar-thumb, .video-list::-webkit-scrollbar-thumb, .chat-session-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.msg { max-width: 90%; padding: 12px 16px; border-radius: 12px; font-size: 14px; line-height: 1.7; animation: fadeUp .2s; overflow-wrap: break-word; }
+.msg.user { align-self: flex-end; background: #EEF2FF; border-bottom-right-radius: 3px; }
+.msg.ai { align-self: flex-start; background: var(--surface); border-bottom-left-radius: 3px; border: 1px solid var(--border); }
+.msg.ai p { margin: 6px 0; }
+.msg.ai strong { color: var(--pink); }
+.msg.ai ul, .msg.ai ol { padding-left: 18px; margin: 6px 0; }
+.msg.ai li { margin: 3px 0; line-height: 1.6; }
+.msg.ai .source-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--purple); background: #F5F3FF; padding: 2px 8px; border-radius: 6px; margin: 8px 4px 0 0; font-weight: 600; cursor: pointer; }
+.typing { color: var(--text-muted); font-size: 12px; padding: 4px 8px; display: none; }
+.typing.show { display: block; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.chat-foot { padding: 14px 24px; border-top: 1px solid var(--border); background: var(--surface); display: flex; gap: 10px; flex-shrink: 0; }
+.chat-foot textarea { flex: 1; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 14px; font-family: var(--font); outline: none; resize: none; min-height: 44px; max-height: 120px; background: var(--bg); }
+.chat-foot textarea:focus { border-color: var(--purple); }
+.chat-foot button { padding: 10px 20px; border: none; border-radius: 10px; background: var(--purple); color: white; font-size: 14px; font-weight: 600; cursor: pointer; transition: .15s; white-space: nowrap; align-self: flex-end; }
+.chat-foot button:hover { background: #7C3AED; }
+.chat-foot button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+
+@media (max-width: 700px) { .sidebar { display: none; } .chat-foot { padding: 10px 12px; } }
+
+/* Video preview modal */
+.overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.45); backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center; padding: 40px; }
+.overlay.open { display: flex; }
+.vod-modal { background: var(--surface); border-radius: var(--radius); width: 100%; max-width: 640px; max-height: 80vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 24px 80px rgba(0,0,0,.18); }
+.modal-head { display: flex; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--border); gap: 10px; flex-shrink: 0; }
+.modal-close { margin-left: auto; font-size: 18px; color: var(--text-muted); cursor: pointer; background: none; border: none; padding: 2px 6px; }
+.modal-close:hover { color: var(--text); }
+.vod-body { flex: 1; overflow-y: auto; padding: 18px 20px; }
+.vod-body::-webkit-scrollbar { width: 4px; }
+.vod-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.vod-body p { margin: 6px 0; }
+.vod-body strong { color: var(--pink); }
+.vod-body ul, .vod-body ol { padding-left: 18px; margin: 6px 0; }
+.vod-body li { margin: 3px 0; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <h1>🧠 知识库</h1>
+  <a href="/" style="font-weight:600">← 返回首页</a>
+  <span style="font-size:12px;color:var(--text-muted)">跨视频语义检索问答</span>
+  <button id="btn-theme" title="切换深色/浅色模式" onclick="toggleTheme()" style="margin-left:auto;border:1.5px solid var(--border);border-radius:6px;padding:4px 8px;font-size:14px;cursor:pointer;background:transparent">🌙</button>
+</div>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-tabs">
+      <div class="sidebar-tab" onclick="switchTab('videos')">📺 视频库</div>
+      <div class="sidebar-tab" onclick="switchTab('articles')">📄 文本库</div>
+      <div class="sidebar-tab active" onclick="switchTab('chats')">💬 对话</div>
+    </div>
+
+    <!-- Videos panel -->
+    <div class="sidebar-panel" id="panel-videos">
+      <div class="panel-head">
+        <input id="search-input" type="text" placeholder="搜索标题..." autocomplete="off">
+      </div>
+      <div class="panel-count" id="videos-count"></div>
+      <div class="video-list" id="video-list"></div>
+      <div style="padding:10px;display:none;text-align:center" id="load-more-tip"><span style="font-size:12px;color:var(--text-muted)">加载中...</span></div>
+    </div>
+
+    <!-- Articles panel -->
+    <div class="sidebar-panel" id="panel-articles">
+      <div class="panel-head">
+        <input id="article-search-input" type="text" placeholder="搜索文章标题..." autocomplete="off">
+      </div>
+      <div class="panel-count" id="articles-count"></div>
+      <div class="video-list" id="article-list"></div>
+      <div style="padding:10px;display:none;text-align:center" id="article-load-tip"><span style="font-size:12px;color:var(--text-muted)">加载中...</span></div>
+    </div>
+
+    <!-- Chats panel -->
+    <div class="sidebar-panel active" id="panel-chats">
+      <div class="panel-head">
+        <span style="font-size:12px;font-weight:700">对话列表</span>
+        <button id="kb-chat-new-btn">+ 新对话</button>
+      </div>
+      <div class="chat-session-list" id="kb-chat-session-list"></div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="main-header">
+      <h2 id="chat-title">全局问答</h2>
+      <span id="chat-hint" style="font-size:12px;color:var(--text-muted)">基于所有已解析视频内容</span>
+    </div>
+    <div class="chat-body" id="chat-body">
+      <div class="empty-state" id="empty-state">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          <path d="M8 11h6"/><path d="M8 8h4"/><path d="M8 14h3"/>
+        </svg>
+        <span>输入问题，AI 将跨视频检索并回答</span>
+      </div>
+    </div>
+    <div class="typing" id="typing">正在检索知识库...</div>
+    <div class="chat-foot">
+      <textarea id="question-input" placeholder="问点什么？" rows="1"></textarea>
+      <button id="send-btn">发送</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const body=$('#chat-body'),inp=$('#question-input'),btn=$('#send-btn'),empty=$('#empty-state');
+
+/* Theme */
+(function(){
+  const saved=localStorage.getItem('theme');
+  const prefers=window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if(saved==='dark'||(!saved&&prefers)){document.documentElement.setAttribute('data-theme','dark');$('#btn-theme').textContent='☀️'}
+})();
+function toggleTheme(){
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  if(isDark){document.documentElement.removeAttribute('data-theme');$('#btn-theme').textContent='🌙';localStorage.setItem('theme','light')}
+  else{document.documentElement.setAttribute('data-theme','dark');$('#btn-theme').textContent='☀️';localStorage.setItem('theme','dark')}
+}
+
+let allVideos=[],vp=1,vHasMore=true,vLoading=false;
+let chatMsgs=[],chatId='',chatCache={},chatTitle='全局问答';
+
+function escHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function newChatId(){ return 'k' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function getKey(){ try{ return JSON.parse(localStorage.getItem('deepseek_key')||'""'); }catch(e){return ''} }
+
+/* ═══ Video preview modal ═══ */
+async function selectVideo(vid){
+  try{
+    const r=await fetch('/api/kb/video/'+vid);
+    const d=await r.json();
+    if(d.status!=='success')return;
+    $('#vod-thumb').src=d.thumbnail||'';
+    $('#vod-title').textContent=d.title;
+    $('#vod-meta').textContent=`${d.uploader||''} · ${d.duration||''}`;
+    $('#vod-summary').innerHTML=window.marked?.parse?.(d.summary||'')||'<span style="color:var(--text-muted)">暂无 AI 总结</span>';
+    const link = $('#vod-link');
+    link.href = '/?vid=' + vid;
+    $('#vod-overlay').classList.add('open');
+    document.querySelectorAll('.video-item').forEach(i=>i.classList.remove('active'));
+    const el=document.querySelector(`.video-item[data-vid="${vid}"]`);
+    if(el) el.classList.add('active');
+  }catch(e){}
+}
+
+function closeVideoPreview(){
+  $('#vod-overlay').classList.remove('open');
+  $('#vod-thumb').style.display='';
+  document.querySelectorAll('.video-item').forEach(i=>i.classList.remove('active'));
+}
+
+/* ═══ Tab switching ═══ */
+function switchTab(tab){
+  const labelMap = {videos:'视频', articles:'文本', chats:'对话'};
+  document.querySelectorAll('.sidebar-tab').forEach(t=>t.classList.toggle('active',t.textContent.includes(labelMap[tab]||'')));
+  document.querySelectorAll('.sidebar-panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+tab));
+}
+
+/* ═══ Video list with pagination ═══ */
+async function loadVideos(reset){
+  if(vLoading)return;
+  if(reset){ vp=1; allVideos=[]; vHasMore=true; }
+  if(!vHasMore)return;
+  vLoading=true;
+  const tip=$('#load-more-tip');
+  if(!reset) tip.style.display = 'block';
+  try{
+    const r=await fetch(`/api/kb/list?page=${vp}&per_page=20`);
+    const d=await r.json();
+    if(d.status!=='success')return;
+    if(reset) allVideos=[];
+    allVideos=allVideos.concat(d.videos||[]);
+    vHasMore=allVideos.length < d.total;
+    vp++;
+    renderVideoList();
+    $('#videos-count').textContent=`共 ${d.total} 个视频`;
+    tip.style.display = vHasMore ? 'block' : 'none';
+  }catch(e){}
+  finally{vLoading=false}
+}
+
+function renderVideoList(){
+  const list=$('#video-list');
+  const q=($('#search-input').value||'').toLowerCase().trim();
+  const filtered = q ? allVideos.filter(v=> (v.title||'').toLowerCase().includes(q) || (v.uploader||'').toLowerCase().includes(q)) : allVideos;
+  if(!filtered.length){ list.innerHTML='<div style="padding:16px;color:var(--text-muted);font-size:13px">无匹配视频</div>'; return }
+  list.innerHTML=filtered.map(v=>`
+    <div class="video-item" data-vid="${v.vid}">
+      <img class="vi-thumb" src="${v.thumbnail||''}" onerror="this.style.display='none'" alt="">
+      <div class="vi-info"><div class="vi-title">${escHtml(v.title)}</div><div class="vi-meta">${escHtml(v.uploader||'')} · ${v.duration||''}</div></div>
+    </div>
+  `).join('');
+}
+
+$('#search-input').addEventListener('input',renderVideoList);
+// 视频库滑动加载
+$('#video-list').addEventListener('scroll', function() {
+  if (!vHasMore || vLoading) return;
+  const { scrollTop, scrollHeight, clientHeight } = this;
+  if (scrollTop + clientHeight >= scrollHeight - 60) {
+    loadVideos(false);
+  }
+});
+
+/* ═══ Article list ═══ */
+let allArticles=[], ap=1, aHasMore=true, aLoading=false;
+async function loadArticles(reset){
+  if(aLoading)return;
+  if(reset){ ap=1; allArticles=[]; aHasMore=true; }
+  if(!aHasMore)return;
+  aLoading=true;
+  const tip=$('#article-load-tip');
+  if(!reset) tip.style.display='block';
+  try{
+    const r=await fetch(`/api/article/list?page=${ap}&per_page=20`);
+    const d=await r.json();
+    if(d.status!=='success')return;
+    if(reset) allArticles=[];
+    allArticles=allArticles.concat(d.articles||[]);
+    aHasMore=allArticles.length < d.total;
+    ap++;
+    renderArticleList();
+    $('#articles-count').textContent=`共 ${d.total} 篇文章`;
+    tip.style.display = aHasMore ? 'block' : 'none';
+  }catch(e){}
+  finally{aLoading=false}
+}
+function renderArticleList(){
+  const list=$('#article-list');
+  const q=($('#article-search-input').value||'').toLowerCase().trim();
+  const filtered = q ? allArticles.filter(v=> (v.title||'').toLowerCase().includes(q)) : allArticles;
+  if(!filtered.length){ list.innerHTML='<div style="padding:16px;color:var(--text-muted);font-size:13px">无匹配文章</div>'; return }
+  list.innerHTML=filtered.map(a=>`
+    <div class="video-item" data-vid="${a.id}" data-type="article">
+      <div class="vi-info"><div class="vi-title">${escHtml(a.title)}</div><div class="vi-meta">${a.processed_at||''}${a.has_summary?' · 已总结':''}</div></div>
+    </div>
+  `).join('');
+}
+$('#article-search-input').addEventListener('input',renderArticleList);
+$('#article-list').addEventListener('scroll', function() {
+  if (!aHasMore || aLoading) return;
+  const { scrollTop, scrollHeight, clientHeight } = this;
+  if (scrollTop + clientHeight >= scrollHeight - 60) loadArticles(false);
+});
+$('#article-list').addEventListener('click',e=>{
+  const item=e.target.closest('.video-item');
+  if(item) previewArticle(item.dataset.vid);
+});
+async function previewArticle(id){
+  try{
+    const r=await fetch('/api/article/'+id);
+    const d=await r.json();
+    if(d.status!=='success')return;
+    const a=d.data;
+    $('#vod-thumb').style.display='none';
+    $('#vod-title').textContent=a.title;
+    $('#vod-meta').textContent=a.processed_at||'';
+    $('#vod-summary').innerHTML=window.marked?.parse?.(a.summary||'')||'<span style="color:var(--text-muted)">暂无 AI 总结</span>';
+    $('#vod-link').href='/?vid=' + id;
+    $('#vod-link').textContent='在首页查看 →';
+    $('#vod-overlay').classList.add('open');
+    document.querySelectorAll('.video-item').forEach(i=>i.classList.remove('active'));
+    const el=document.querySelector(`.video-item[data-vid="${id}"]`);
+    if(el) el.classList.add('active');
+  }catch(e){}
+}
+
+/* ═══ Source tag handler — support article type ═══ */
+$('#chat-body').addEventListener('click',e=>{
+  const tag=e.target.closest('.source-tag');
+  if(!tag) return;
+  if(tag.dataset.type==='article') previewArticle(tag.dataset.vid);
+  else selectVideo(tag.dataset.vid);
+});
+
+// 事件委托：视频列表
+$('#video-list').addEventListener('click',e=>{
+  const item=e.target.closest('.video-item');
+  if(item) selectVideo(item.dataset.vid);
+});
+
+/* ═══ Chat session management ═══ */
+async function loadChatList(){
+  try{
+    const r=await fetch('/api/kb/chat');
+    const d=await r.json();
+    if(d.status!=='success')return;
+    const data=d.data;
+    data.list.forEach(c=>{chatCache[c.id]=c});
+    renderSessionList(data.list, data.active);
+    const activeId = data.active || (data.list[0]||{}).id || '';
+    if(activeId){
+      const found=data.list.find(c=>c.id===activeId);
+      if(found){ chatMsgs=[...found.messages]; chatId=activeId; chatTitle=found.title||'对话'; }
+    }
+    if(!chatId){ chatId=newChatId(); chatMsgs=[]; chatTitle='全局问答'; }
+    renderChatHistory();
+    updateChatTitle();
+  }catch(e){}
+}
+
+function renderSessionList(list, activeId){
+  const sl=$('#kb-chat-session-list');
+  sl.innerHTML='';
+  if(!list||!list.length) return;
+  list.forEach(c=>{
+    const div=document.createElement('div');
+    div.className='session-item'+(c.id===activeId?' active':'');
+    div.setAttribute('data-id',c.id);
+    div.innerHTML=`<span class="si-text" title="${escHtml(c.title||'')}">${escHtml(c.title||c.id)}</span><span class="si-del">✕</span>`;
+    div.querySelector('.si-text').onclick=()=>kbSwitchChat(c.id);
+    div.querySelector('.si-del').onclick=(e)=>{e.stopPropagation();if(confirm('删除此对话？'))deleteKbChat(c.id)};
+    sl.appendChild(div);
+  });
+}
+
+async function deleteKbChat(id){
+  await fetch('/api/kb/chat/delete/'+id,{method:'POST'});
+  if(chatId===id){ chatMsgs=[]; chatId=newChatId(); chatTitle='全局问答'; renderChatHistory(); updateChatTitle(); }
+  await loadChatList();
+}
+
+async function saveKbChat(){
+  if(!chatId||!chatMsgs.length)return;
+  // 立即快照，防止切换时被覆盖
+  const sid=chatId, smsgs=[...chatMsgs];
+  const title=smsgs.find(m=>m.role==='user')?.content?.slice(0,20)||'新对话';
+  chatCache[sid]={id:sid,title,messages:smsgs,time:new Date().toISOString().slice(0,16).replace('T',' ')};
+  try{
+    await fetch('/api/kb/chat/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:sid,title,messages:smsgs})});
+    document.querySelectorAll('.session-item').forEach(s=>s.classList.remove('active'));
+    const item=$(`.session-item[data-id="${sid}"]`);
+    if(item) { item.querySelector('.si-text').textContent=title; item.classList.add('active'); }
+    else {
+      const sl=$('#kb-chat-session-list');
+      const div=document.createElement('div');
+      div.className='session-item active';
+      div.setAttribute('data-id',sid);
+      div.innerHTML=`<span class="si-text">${escHtml(title)}</span><span class="si-del">✕</span>`;
+      div.querySelector('.si-text').onclick=()=>kbSwitchChat(sid);
+      div.querySelector('.si-del').onclick=e=>{e.stopPropagation();if(confirm('删除此对话？'))deleteKbChat(sid)};
+      sl.insertBefore(div,sl.firstChild);
+    }
+  }catch(e){}
+}
+
+async function kbSwitchChat(id){
+  // 先保存当前对话（异步，不阻塞）
+  saveKbChat();
+  const cached=chatCache[id];
+  if(cached){ chatMsgs=[...cached.messages]; chatId=id; chatTitle=cached.title||'对话'; }
+  else {
+    try{
+      const r=await fetch('/api/kb/chat'); const d=await r.json();
+      const found=(d.data?.list||[]).find(c=>c.id===id);
+      if(found){ chatMsgs=[...found.messages]; chatId=id; chatTitle=found.title||'对话'; chatCache[id]=found; }
+    }catch(e){}
+  }
+  renderChatHistory();
+  updateChatTitle();
+  document.querySelectorAll('.session-item').forEach(s=>s.classList.remove('active'));
+  const el=document.querySelector(`.session-item[data-id="${id}"]`);
+  if(el) el.classList.add('active');
+}
+
+function updateChatTitle(){ $('#chat-title').textContent=chatTitle; }
+
+function renderChatHistory(){
+  body.innerHTML='';
+  if(!chatMsgs.length){ body.innerHTML='<div class="empty-state"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M8 11h6"/><path d="M8 8h4"/><path d="M8 14h3"/></svg><span>输入问题，AI 将跨视频检索并回答</span></div>'; return }
+  chatMsgs.forEach(m=>{
+    if(m.role==='user') body.innerHTML+=`<div class="msg user">${escHtml(m.content)}</div>`;
+    else body.innerHTML+=`<div class="msg ai">${m.content}</div>`;
+  });
+  body.scrollTop=body.scrollHeight;
+}
+
+$('#kb-chat-new-btn').addEventListener('click',()=>{
+  chatMsgs=[]; chatId=newChatId(); chatTitle='全局问答';
+  renderChatHistory(); updateChatTitle();
+  document.querySelectorAll('.session-item').forEach(i=>i.classList.remove('active'));
+});
+// 事件委托：对话列表点击
+$('#kb-chat-session-list').addEventListener('click',e=>{
+  const item=e.target.closest('.session-item');
+  if(!item)return;
+  const del=e.target.closest('.si-del');
+  if(del){e.stopPropagation();if(confirm('删除此对话？'))deleteKbChat(item.dataset.id);return}
+  kbSwitchChat(item.dataset.id);
+});
+
+/* ═══ Send question ═══ */
+async function sendQuestion(){
+  const q=inp.value.trim();
+  if(!q)return inp.focus();
+
+  chatMsgs.push({role:'user',content:q});
+  renderChatHistory();
+  inp.value=''; btn.disabled=true; $('#typing').classList.add('show');
+  const msgDiv=document.createElement('div');
+  msgDiv.className='msg ai'; msgDiv.textContent='检索中...';
+  body.appendChild(msgDiv);
+  body.scrollTop=body.scrollHeight;
+
+  try{
+    const r=await fetch('/api/kb/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q, deepseek_key: getKey()})});
+    const d=await r.json();
+    if(d.status==='success'){
+      let html = marked.parse(d.reply);
+      if(d.sources&&d.sources.length){
+        html+='<div style="margin-top:10px;font-size:12px;color:var(--text-muted)">📂 参考：';
+        d.sources.forEach(s=>html+=`<span class="source-tag" data-vid="${s.vid}" data-type="${s.type||'video'}">${escHtml(s.title)}</span>`);
+        html+='</div>';
+      }
+      msgDiv.innerHTML=html;
+      chatMsgs.push({role:'assistant',content:html});
+      saveKbChat();
+    }else{
+      msgDiv.innerHTML=`<span style="color:var(--error)">${escHtml(d.error||'请求失败')}</span>`;
+    }
+  }catch(e){ msgDiv.innerHTML='<span style="color:var(--error)">网络错误</span>'; }
+  $('#typing').classList.remove('show'); btn.disabled=false;
+  body.scrollTop=body.scrollHeight; inp.focus();
+}
+
+function getKey(){ try{ return JSON.parse(localStorage.getItem('deepseek_key')||'""'); }catch(e){return ''} }
+
+$('#send-btn').addEventListener('click',sendQuestion);
+inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendQuestion()}});
+
+/* ═══ Init ═══ */
+loadVideos(true);
+loadArticles(true);
+loadChatList();
+import('https://esm.sh/marked').then(m=>{window.marked=m});
+</script>
+
+<!-- ═══ Video Preview Modal ═══ -->
+<div class="overlay" id="vod-overlay" onclick="if(event.target===this)closeVideoPreview()">
+  <div class="modal vod-modal">
+    <div class="modal-head">
+      <h3 id="vod-title" style="font-size:15px;font-weight:700"></h3>
+      <button class="modal-close" onclick="closeVideoPreview()">&times;</button>
+    </div>
+    <div class="vod-body" id="vod-body">
+      <div style="display:flex;gap:16px;margin-bottom:16px;align-items:flex-start">
+        <img id="vod-thumb" src="" style="width:200px;height:112px;border-radius:8px;object-fit:cover;flex-shrink:0" alt="">
+        <div>
+          <div id="vod-meta" style="font-size:13px;color:var(--text-muted);margin-bottom:8px"></div>
+          <a id="vod-link" href="/" target="_blank" style="font-size:12px;color:var(--purple);text-decoration:underline">在首页查看 →</a>
+        </div>
+      </div>
+      <div style="font-size:14px;line-height:1.8;color:var(--text)" id="vod-summary"></div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

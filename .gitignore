@@ -1,0 +1,14 @@
+output/
+py310/
+models/
+tools/*.exe
+cookies.txt
+proxy.txt
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.env
+.DS_Store
+Thumbs.db
