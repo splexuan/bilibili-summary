@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 BASE_DIR = Path(__file__).parent
 OUTPUT_DIR = BASE_DIR / "output"
-PYTHON_EXE = BASE_DIR / "py310" / "python.exe"
+PYTHON_EXE = Path(sys.executable) if Path(sys.executable).exists() else Path("python")
 _SAFE_VID_RE = re.compile(r"^[A-Za-z0-9_-]{1,128}$")
 
 
