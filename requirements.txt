@@ -12,6 +12,3 @@ sherpa-onnx>=1.12
 yt-dlp>=2024
 rank-bm25>=0.2
 edge-tts>=6.1
-
-# 生产部署（可选）
-gunicorn>=22.0

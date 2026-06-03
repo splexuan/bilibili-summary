@@ -35,27 +35,33 @@
 
 ## 快速开始
 
-### 1. 下载模型和 FFmpeg
+### 1. 克隆项目
 
-启动程序后，左侧会显示下载卡片，点击按钮即可在线下载。也可手动：
-
-- **FFmpeg**：[蓝奏云](https://wwawt.lanzout.com/iim2d3qye27c)（密码 hxaz），将 `ffmpeg.exe` 放入 `tools/` 目录
-- **语音模型**：双击 `一键下载模型.bat`，自动下载到 `models/sherpa-onnx-sense-voice-small/`
-
-### 2. 启动
-
-**Windows**：双击 `启动.bat`，访问 http://localhost:3195
-
-**Linux**：
 ```bash
-sudo apt install -y ffmpeg
-pip install -r requirements.txt
-python app.py
+git clone https://gitee.com/slexuan/bilibili-summary.git
+cd bilibili-summary
 ```
 
-### 3. 配置
+### 2. 安装依赖
 
-在 ⚙ 设置中填写 [DeepSeek API Key](https://platform.deepseek.com/api_keys)。Key 保存在 `~/.bilibili-summary-key`，一次配置永久生效。
+```bash
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+```
+
+### 3. 下载组件
+
+启动后左侧会显示下载卡片，点击按钮在线下载。也可手动：
+
+- **FFmpeg**：[蓝奏云](https://wwawt.lanzout.com/iim2d3qye27c)（密码 hxaz），`ffmpeg.exe` 放入 `tools/`
+- **语音模型**：首页点击下载按钮，自动下载
+
+### 4. 启动
+
+双击 `启动.bat`，浏览器访问 http://localhost:3195
+
+### 5. 配置
+
+在 ⚙ 设置中填写 [DeepSeek API Key](https://platform.deepseek.com/api_keys)，保存在 `~/.bilibili-summary-key`，一次配置永久生效。
 
 可选：B站 Cookie（解决下载限速）、HTTP/SOCKS 代理。
 
@@ -82,13 +88,14 @@ bilibili-summary/
 ├── summarizer.py        # AI 总结 + RAG 引擎
 ├── kb_index.py          # 知识库混合索引
 ├── db.py                # SQLite 数据库
-├── download_model.py    # 模型下载脚本
 ├── static/
 │   ├── index.html       # 首页（视频/文章）
 │   └── knowledge.html   # 知识库问答
+├── models/              # 语音识别模型
+├── output/              # 数据持久化（SQLite、封面）
+├── tools/               # FFmpeg
 ├── requirements.txt
-├── 启动.bat
-└── 一键下载模型.bat
+└── 启动.bat
 ```
 
 ## 处理流程
