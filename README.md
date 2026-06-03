@@ -4,7 +4,7 @@
 
 ## 界面预览
 
-<p align="center"><img src="static/example/homepage.png" width="80%" alt="首页" /></p>+
+<p align="center"><img src="static/example/homepage.png" width="80%" alt="首页" /></p>
 <p align="center"><strong>首页</strong></p>
 <p align="center"><img src="static/example/knowledge.png" width="80%" alt="知识库" /></p>
 <p align="center"><strong>知识库问答</strong></p>
