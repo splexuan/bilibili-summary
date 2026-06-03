@@ -397,13 +397,16 @@ def list_history(search: str = None) -> list[dict]:
 
 
 def delete_video(vid: str) -> bool:
-    """删除整个视频文件夹"""
+    """删除视频文件夹和数据库记录"""
     import shutil
+    from db import delete_video as db_delete_video
+    # 先删数据库记录（videos + chats + 封面）
+    db_delete_video(vid)
+    # 再删磁盘文件夹
     try:
         d = vid_dir(vid)
     except InvalidPathError:
         return False
     if d.exists():
         shutil.rmtree(d)
-        return True
-    return False
+    return True

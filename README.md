@@ -11,6 +11,83 @@
 <p align="center"><img src="static/example/explain.png" width="80%" alt="技术说明" /></p>
 <p align="center"><strong>技术说明</strong></p>
 
+## 环境要求
+
+- Python 3.10 及以上版本
+- FFmpeg（音频格式转换）
+- 网络连接（首次需下载 SenseVoice Small 模型 ~229MB）
+
+## 一键部署
+
+以下命令按顺序执行即可完成部署：
+
+```bash
+# 1. 克隆项目
+git clone https://gitee.com/slexuan/bilibili-summary.git
+cd bilibili-summary
+
+# 2. 创建虚拟环境
+python -m venv .venv
+
+# 3. 激活虚拟环境
+#    Windows:
+.venv\Scripts\activate
+#    macOS / Linux:
+source .venv/bin/activate
+
+# 4. 安装依赖
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+# 5. 下载 FFmpeg（二选一）
+#    方式A：蓝奏云下载 ffmpeg.exe 放入 tools/ 目录
+#    方式B：启动后在左侧卡片点击"下载 FFmpeg"
+
+# 6. 启动服务
+python -B app.py
+```
+
+浏览器访问 http://localhost:3195
+
+### 各步骤说明
+
+#### 步骤 1-3：环境准备
+
+克隆项目后创建虚拟环境 `.venv`，激活后终端提示符会带 `(.venv)` 标识。
+
+#### 步骤 4：安装依赖
+
+使用清华镜像加速安装所有 Python 依赖包：
+
+```bash
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+```
+
+#### 步骤 5：下载 FFmpeg
+
+FFmpeg 用于音频格式转换，获取方式：
+
+- **在线下载**：启动后在首页左侧卡片点击"下载 FFmpeg"，自动下载解压到 `tools/`
+- **手动下载**：[蓝奏云](https://wwawt.lanzout.com/iim2d3qye27c)（密码 hxaz），将 `ffmpeg.exe` 放入项目 `tools/` 目录
+
+#### 步骤 6：启动服务
+
+- **Windows**：双击 `启动.bat`，自动使用 `.venv` 虚拟环境
+- **所有平台**：确认虚拟环境已激活后执行 `python -B app.py`
+
+浏览器访问 http://localhost:3195 打开 Web 界面。
+
+#### 语音模型
+
+SenseVoice Small 语音识别模型（~229MB）在首次使用语音转写时提示下载，也可在首页左侧卡片点击"下载语音模型"提前下载。
+
+### 配置 API Key
+
+在 Web 界面 ⚙ 设置中填写 [DeepSeek API Key](https://platform.deepseek.com/api_keys)，保存至 `~/.bilibili-summary-key`，一次配置永久生效。
+
+可选配置：
+- **B站 Cookie**：解决高画质下载限速，在设置页粘贴浏览器 Cookie
+- **代理**：HTTP/SOCKS 代理，用于 YouTube 访问
+
 ## 功能
 
 **视频总结**
@@ -42,38 +119,6 @@
 - 播放原视频：B站/YouTube 内嵌播放器
 - 对话记录：视频内对话和知识库对话均持久化
 
-## 快速开始
-
-### 1. 克隆项目
-
-```bash
-git clone https://gitee.com/slexuan/bilibili-summary.git
-cd bilibili-summary
-```
-
-### 2. 安装依赖
-
-```bash
-pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
-```
-
-### 3. 下载组件
-
-启动后左侧会显示下载卡片，点击按钮在线下载。也可手动：
-
-- **FFmpeg**：[蓝奏云](https://wwawt.lanzout.com/iim2d3qye27c)（密码 hxaz），`ffmpeg.exe` 放入 `tools/`
-- **语音模型**：首页点击下载按钮，自动下载
-
-### 4. 启动
-
-双击 `启动.bat`，浏览器访问 http://localhost:3195
-
-### 5. 配置
-
-在 ⚙ 设置中填写 [DeepSeek API Key](https://platform.deepseek.com/api_keys)，保存在 `~/.bilibili-summary-key`，一次配置永久生效。
-
-可选：B站 Cookie（解决下载限速）、HTTP/SOCKS 代理。
-
 ## 技术栈
 
 | 层级 | 方案 |
@@ -104,7 +149,7 @@ bilibili-summary/
 ├── output/              # 数据持久化（SQLite、封面）
 ├── tools/               # FFmpeg
 ├── requirements.txt
-└── 启动.bat
+└── 启动.bat             # Windows 一键启动
 ```
 
 ## 处理流程
@@ -115,12 +160,6 @@ bilibili-summary/
 
 问答：用户提问 → 总结粗筛（BM25+TF-IDF） → Top3 原文 RAG 精查 → AI 回答
 ```
-
-## 依赖
-
-- Python 3.10+
-- FFmpeg（音频格式转换）
-- SenseVoice Small 模型 ~229MB（语音转文字）
 
 ## License
 
