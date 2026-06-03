@@ -400,13 +400,14 @@ def delete_video(vid: str) -> bool:
     """删除视频文件夹和数据库记录"""
     import shutil
     from db import delete_video as db_delete_video
-    # 先删数据库记录（videos + chats + 封面）
-    db_delete_video(vid)
-    # 再删磁盘文件夹
+    # 先校验路径合法性
     try:
         d = vid_dir(vid)
     except InvalidPathError:
         return False
+    # 删数据库记录（videos + chats + 封面）
+    db_delete_video(vid)
+    # 删磁盘文件夹
     if d.exists():
         shutil.rmtree(d)
     return True

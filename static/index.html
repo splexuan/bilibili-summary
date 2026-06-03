@@ -659,21 +659,31 @@ body {
 
     <div class="card" id="download-card" style="display:none;padding:14px 16px;margin-bottom:0">
       <div style="font-size:12px;font-weight:650;color:var(--error);margin-bottom:10px">⚠ 以下组件未下载，视频转写需要它们</div>
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px" id="dl-ffmpeg-row">
-        <span style="font-size:13px;flex:1">FFmpeg</span>
-        <span id="dl-ffmpeg-status" style="font-size:12px;color:var(--text-muted)">检测中</span>
-        <button id="dl-btn-ffmpeg" onclick="downloadTools()" style="padding:3px 10px;font-size:11px;background:var(--error);color:#fff;border:none;border-radius:5px;cursor:pointer;font-family:var(--font)">下载</button>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px" id="dl-model-row">
-        <span style="font-size:13px;flex:1">语音模型</span>
-        <span id="dl-model-status" style="font-size:12px;color:var(--text-muted)">检测中</span>
-        <button id="dl-btn-model" onclick="downloadModel()" style="padding:3px 10px;font-size:11px;background:var(--error);color:#fff;border:none;border-radius:5px;cursor:pointer;font-family:var(--font)">下载</button>
-      </div>
-      <div id="dl-progress" style="display:none;margin-top:8px">
-        <div style="background:var(--border);border-radius:4px;height:6px;overflow:hidden">
-          <div id="dl-bar" style="background:var(--pink);height:100%;width:0%"></div>
+      <div style="margin-bottom:8px" id="dl-ffmpeg-row">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:13px;flex:1">FFmpeg</span>
+          <span id="dl-ffmpeg-status" style="font-size:12px;color:var(--text-muted)">检测中</span>
+          <button id="dl-btn-ffmpeg" onclick="downloadTools()" style="padding:3px 10px;font-size:11px;background:var(--error);color:#fff;border:none;border-radius:5px;cursor:pointer;font-family:var(--font)">下载</button>
         </div>
-        <span id="dl-text" style="font-size:11px;color:var(--text-muted)"></span>
+        <div class="dl-row-progress" id="dl-ffmpeg-progress" style="display:none;margin-top:6px">
+          <div style="background:var(--border);border-radius:4px;height:5px;overflow:hidden">
+            <div class="dl-row-bar" style="background:var(--pink);height:100%;width:0%"></div>
+          </div>
+          <span class="dl-row-text" style="font-size:11px;color:var(--text-muted)"></span>
+        </div>
+      </div>
+      <div id="dl-model-row">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:13px;flex:1">语音模型</span>
+          <span id="dl-model-status" style="font-size:12px;color:var(--text-muted)">检测中</span>
+          <button id="dl-btn-model" onclick="downloadModel()" style="padding:3px 10px;font-size:11px;background:var(--error);color:#fff;border:none;border-radius:5px;cursor:pointer;font-family:var(--font)">下载</button>
+        </div>
+        <div class="dl-row-progress" id="dl-model-progress" style="display:none;margin-top:6px">
+          <div style="background:var(--border);border-radius:4px;height:5px;overflow:hidden">
+            <div class="dl-row-bar" style="background:var(--pink);height:100%;width:0%"></div>
+          </div>
+          <span class="dl-row-text" style="font-size:11px;color:var(--text-muted)"></span>
+        </div>
       </div>
       <div style="margin-top:6px;font-size:11px;color:var(--text-muted)">网络慢？FFmpeg <a href="https://wwawt.lanzout.com/iim2d3qye27c" target="_blank" style="color:var(--pink)">蓝奏云</a>（密码 hxaz）<code>ffmpeg.exe</code> 到 <code>tools/</code></div>
     </div>
@@ -1093,12 +1103,14 @@ async function checkModelStatus() {
 }
 checkModelStatus();
 
-async function _sseDownload(url, label) {
+async function _sseDownload(url, label, progressId) {
   const resp = await fetch(url, { method: 'POST' });
   const reader = resp.body.getReader(); const dec = new TextDecoder(); let buf = '';
-  const bar = document.getElementById('dl-bar');
-  const text = document.getElementById('dl-text');
-  document.getElementById('dl-progress').style.display = 'block';
+  const progressDiv = document.getElementById(progressId);
+  if (!progressDiv) return;
+  const bar = progressDiv.querySelector('.dl-row-bar');
+  const text = progressDiv.querySelector('.dl-row-text');
+  progressDiv.style.display = 'block';
   while (true) {
     const { done, value } = await reader.read();
     if (done) return;
@@ -1121,13 +1133,16 @@ async function _sseDownload(url, label) {
   }
 }
 async function downloadTools() {
-  await _sseDownload('/api/tools/download', 'FFmpeg');
+  const btn = document.getElementById('dl-btn-ffmpeg');
+  if (btn) { btn.disabled = true; btn.textContent = '下载中...'; }
+  await _sseDownload('/api/tools/download', 'FFmpeg', 'dl-ffmpeg-progress');
   ffmpegReady = true; updateDlCard();
+  if (btn) { btn.disabled = false; btn.textContent = '下载'; }
 }
 async function downloadModel() {
   const btn = document.getElementById('dl-btn-model');
   if (btn) { btn.disabled = true; btn.textContent = '下载中...'; }
-  await _sseDownload('/api/model/download', '语音模型');
+  await _sseDownload('/api/model/download', '语音模型', 'dl-model-progress');
   modelReady = true; updateDlCard();
   if (btn) { btn.disabled = false; btn.textContent = '下载'; }
 }
