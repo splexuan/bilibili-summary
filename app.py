@@ -987,10 +987,14 @@ def api_kb_ask():
     if target_vid and not video_scores:
         return jsonify({"reply": "指定内容未找到。", "status": "error"})
 
-    # 第二步：取 top 3，用 RAG 精查
+    # 第二步：取 top 5（排除得分过低的无关内容），用 RAG 精查
     context_parts = []
     sources = []
-    for rid, _ in video_scores[:3]:
+    max_score = video_scores[0][1] if video_scores else 0
+    for rid, score in video_scores[:5]:
+        # 得分低于最高分 10% 的视为不相关，排除
+        if max_score > 0 and score < max_score * 0.1:
+            continue
         if rid.startswith("A_"):
             a = load_article(rid)
             if not a or not a.get("text"): continue
