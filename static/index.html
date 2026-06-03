@@ -910,7 +910,7 @@ body {
         <p class="key-hint"><a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener">获取 Key →</a></p>
       </div>
       <div class="field">
-        <label for="settings-cookie-input">B站 Cookie <span style="font-weight:400;color:var(--text-muted);font-size:11px">（可选，解决下载限速）</span></label>
+        <label for="settings-cookie-input">B站 Cookie <span style="font-weight:400;color:var(--error);font-size:11px">（必填，使用前请先保存）</span></label>
         <input type="text" id="settings-cookie-input" placeholder="F12 → Network → 复制 Cookie 值...">
         <p class="key-hint" style="display:flex;align-items:center;gap:8px;margin-top:6px">
           <button class="act show" id="settings-cookie-save" style="padding:5px 12px;font-size:12px;border-color:var(--pink);color:var(--pink)">保存</button>
@@ -1054,6 +1054,8 @@ function updatePlatformBadge(platform=''){
 (async()=>{try{const r=await fetch('/api/key');const d=await r.json();if(d.has_key)$('#settings-deepseek-key').placeholder='已缓存'}catch(e){}})();
 // 回显代理
 (async()=>{try{const r=await fetch('/api/proxy');const d=await r.json();if(d.proxy)$('#settings-proxy-input').value=d.proxy}catch(e){}})();
+// 回显 Cookie 状态
+(async()=>{try{const r=await fetch('/api/cookies');const d=await r.json();if(d.has_cookie){$("#settings-cookie-input").placeholder='已保存 '+d.count+' 个 Cookie';$('#settings-cookie-msg').textContent='✅ 已保存 '+d.count+' 个 Cookie';$('#settings-cookie-msg').style.color='var(--success)'}}catch(e){}})();
 // 标题悬停提示
 $('#video-title').addEventListener('mouseenter',()=>{
   const tip=$('#title-tip'),t=$('#video-title');
@@ -1137,13 +1139,13 @@ $('#settings-tts-voice').addEventListener('change',()=>{
   localStorage.setItem('tts_voice', $('#settings-tts-voice').value);
 });
 $('#settings-cookie-save').addEventListener('click',async()=>{
-  const raw = $('#settings-cookie-input').value.trim();
+  const raw = $("#settings-cookie-input").value.trim();
   const msg = $('#settings-cookie-msg');
   if(!raw){msg.textContent='请先粘贴 Cookie';msg.style.color='var(--error)';return}
   try{
     const r = await fetch('/api/cookies',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cookie:raw})});
     const d = await r.json();
-    if(d.status==='success'){msg.textContent='✅ '+d.message+'，即时生效';msg.style.color='var(--success)';$('#settings-cookie-input').value=''}
+    if(d.status==='success'){msg.textContent='✅ '+d.message+'，即时生效';msg.style.color='var(--success)';$("#settings-cookie-input").placeholder='已保存 Cookie';_cookieCached=null}
     else{msg.textContent='❌ '+d.error;msg.style.color='var(--error)'}
   }catch(e){msg.textContent='❌ 保存失败';msg.style.color='var(--error)'}
 });
@@ -1789,6 +1791,24 @@ async function checkKey() {
   return false;
 }
 
+/* B站 Cookie 必填检查 */
+let _cookieCached = null;
+async function checkCookie() {
+  if (_cookieCached !== null && _cookieCached) return true;
+  try {
+    const r = await fetch('/api/cookies');
+    const d = await r.json();
+    _cookieCached = d.has_cookie;
+    if (d.has_cookie) return true;
+  } catch (e) { _cookieCached = false; }
+  // 弹出设置弹窗
+  $('#settings-overlay').classList.add('open');
+  checkModelStatus();
+  // 高亮 Cookie 输入框
+  setTimeout(() => $("#settings-cookie-input").focus(), 300);
+  return false;
+}
+
 /* Article summarization */
 const abtn = $('#btn-article-start');
 abtn.addEventListener('click', summarizeArticle);
@@ -1875,6 +1895,8 @@ async function start(){
   if(!url.includes('bilibili.com')&&!url.includes('b23.tv')&&!url.includes('youtube.com')&&!url.includes('youtu.be')&&!url.startsWith('http')){alert('请输入有效的视频链接');return}
   if(running)return;
   if(!await checkKey())return;
+  // B站链接必须保存 Cookie
+  if((url.includes('bilibili.com')||url.includes('b23.tv'))&&!await checkCookie()){alert('请先在 ⚙ 设置 中保存 B站 Cookie 后再解析');return}
   if(!modelReady || !ffmpegReady) { updateDlCard(); return; }
   running=true;btn.disabled=true;btn.innerHTML='<span class="spin"></span>处理中';
   resetSteps();$('#progress-card').style.display='block';$('#video-info').classList.remove('show');

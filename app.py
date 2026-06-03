@@ -1333,6 +1333,18 @@ def api_history_delete(vid):
     return jsonify({"status": "error", "error": "删除失败"})
 
 
+@app.route("/api/cookies", methods=["GET"])
+def api_cookies_get():
+    """读取 B站 Cookie 状态"""
+    cookie_path = BASE_DIR / "cookies.txt"
+    if cookie_path.exists():
+        content = cookie_path.read_text(encoding="utf-8").strip()
+        # 统计有效 cookie 行数（排除注释行）
+        count = sum(1 for line in content.split("\n") if line.strip() and not line.startswith("#"))
+        return jsonify({"has_cookie": True, "count": count})
+    return jsonify({"has_cookie": False, "count": 0})
+
+
 @app.route("/api/cookies", methods=["POST"])
 def api_cookies():
     """保存 cookies.txt，用于加速 B 站下载"""
