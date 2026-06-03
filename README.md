@@ -69,6 +69,8 @@ pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 ![首页预览](static/example/homepage.png)
 
+![技术说明](static/example/explain.png)
+
 ## 技术栈
 
 | 层级 | 方案 |
