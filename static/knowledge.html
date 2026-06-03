@@ -25,8 +25,11 @@
 [data-theme="dark"] .kbd { background: #1E293B; }
 [data-theme="dark"] .kb-close { background: #1E293B; }
 [data-theme="dark"] .kb-close:hover { background: rgba(239,68,68,.15); }
-[data-theme="dark"] .msg.user { background: #2563EB; color: #EFF6FF; }
-[data-theme="dark"] .msg.ai { background: var(--surface); border-color: var(--border); color: var(--text); }
+[data-theme="dark"] .msg.user { background: #1E293B; color: var(--text); }
+[data-theme="dark"] .msg.ai .content { background: var(--surface); border-color: var(--border); box-shadow: none; }
+[data-theme="dark"] .msg.ai .source-tag { background: rgba(139,92,246,.15); }
+[data-theme="dark"] .main { background: var(--bg); }
+[data-theme="dark"] .main { background: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%); }
 [data-theme="dark"] .video-item:hover { background: #1E293B; }
 [data-theme="dark"] .video-item.active { background: rgba(139,92,246,.15); border-left-color: var(--purple); color: var(--text); }
 [data-theme="dark"] .session-item:hover { background: #1E293B; }
@@ -80,35 +83,52 @@ a { color: var(--pink); text-decoration: none; }
 .session-item .si-del { opacity: 0; font-size: 11px; color: #EF4444; cursor: pointer; padding: 2px 4px; }
 .session-item:hover .si-del { opacity: 1; }
 
-/* Main chat */
-.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-.main-header { padding: 14px 24px; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; }
-.main-header h2 { font-size: 16px; font-weight: 700; color: var(--purple); }
-.main-header span { font-size: 12px; color: var(--text-muted); }
-.empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); gap: 12px; }
-.empty-state svg { opacity: .3; }
-.chat-body { flex: 1; overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; }
-.chat-body::-webkit-scrollbar, .video-list::-webkit-scrollbar, .chat-session-list::-webkit-scrollbar { width: 4px; }
-.chat-body::-webkit-scrollbar-thumb, .video-list::-webkit-scrollbar-thumb, .chat-session-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-.msg { max-width: 90%; padding: 12px 16px; border-radius: 12px; font-size: 14px; line-height: 1.7; animation: fadeUp .2s; overflow-wrap: break-word; }
-.msg.user { align-self: flex-end; background: #EEF2FF; border-bottom-right-radius: 3px; }
-.msg.ai { align-self: flex-start; background: var(--surface); border-bottom-left-radius: 3px; border: 1px solid var(--border); }
-.msg.ai p { margin: 6px 0; }
-.msg.ai strong { color: var(--pink); }
-.msg.ai ul, .msg.ai ol { padding-left: 18px; margin: 6px 0; }
-.msg.ai li { margin: 3px 0; line-height: 1.6; }
-.msg.ai .source-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--purple); background: #F5F3FF; padding: 2px 8px; border-radius: 6px; margin: 8px 4px 0 0; font-weight: 600; cursor: pointer; }
-.typing { color: var(--text-muted); font-size: 12px; padding: 4px 8px; display: none; }
+/* Main chat - Doubao style */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
+.chat-scroll { flex: 1; overflow-y: auto; padding: 40px 20px 20px; }
+.chat-container { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+.empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); gap: 16px; padding: 60px 20px; }
+.empty-state svg { opacity: .4; }
+
+/* Messages */
+.msg-row { display: flex; width: 100%; }
+.msg-row.user { justify-content: flex-end; }
+.msg-row.ai { justify-content: flex-start; }
+
+.msg { font-size: 15px; line-height: 1.8; animation: fadeUp .3s; overflow-wrap: break-word; }
+.msg.user { max-width: 70%; background: #F2F2F2; padding: 12px 18px; border-radius: 18px 18px 4px 18px; color: var(--text); }
+.msg.ai { max-width: 100%; color: var(--text); padding: 0; }
+.msg.ai .content { background: var(--surface); padding: 20px 24px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+
+.msg.ai h1, .msg.ai h2, .msg.ai h3 { font-size: 16px; font-weight: 700; color: var(--text); margin: 16px 0 10px; }
+.msg.ai h1:first-child, .msg.ai h2:first-child, .msg.ai h3:first-child { margin-top: 0; }
+.msg.ai p { margin: 10px 0; }
+.msg.ai strong { color: var(--pink); font-weight: 700; }
+.msg.ai ul, .msg.ai ol { padding-left: 24px; margin: 12px 0; }
+.msg.ai li { margin: 6px 0; line-height: 1.7; }
+.msg.ai .source-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--purple); background: #F5F3FF; padding: 4px 12px; border-radius: 6px; margin: 12px 8px 0 0; font-weight: 600; cursor: pointer; transition: .15s; }
+.msg.ai .source-tag:hover { background: #EDE9FE; transform: translateY(-1px); }
+
+.typing { color: var(--text-muted); font-size: 13px; padding: 8px 0; display: none; }
 .typing.show { display: block; }
-@keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-.chat-foot { padding: 14px 24px; border-top: 1px solid var(--border); background: var(--surface); display: flex; gap: 10px; flex-shrink: 0; }
-.chat-foot textarea { flex: 1; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 14px; font-family: var(--font); outline: none; resize: none; min-height: 44px; max-height: 120px; background: var(--bg); }
-.chat-foot textarea:focus { border-color: var(--purple); }
-.chat-foot button { padding: 10px 20px; border: none; border-radius: 10px; background: var(--purple); color: white; font-size: 14px; font-weight: 600; cursor: pointer; transition: .15s; white-space: nowrap; align-self: flex-end; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Input area */
+.chat-foot-wrap { background: var(--surface); border-top: 1px solid var(--border); flex-shrink: 0; padding: 16px 20px 24px; }
+.chat-foot { max-width: 1000px; margin: 0 auto; display: flex; gap: 12px; }
+.chat-foot textarea { flex: 1; padding: 14px 18px; border: 1.5px solid var(--border); border-radius: 18px; font-size: 15px; font-family: var(--font); outline: none; resize: none; min-height: 48px; max-height: 140px; background: var(--bg); transition: .2s; line-height: 1.5; }
+.chat-foot textarea:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(139,92,246,.08); }
+.chat-foot textarea::placeholder { color: var(--text-muted); }
+.chat-foot button { padding: 0 24px; border: none; border-radius: 18px; background: var(--purple); color: white; font-size: 15px; font-weight: 600; cursor: pointer; transition: .15s; white-space: nowrap; align-self: flex-end; height: 48px; }
 .chat-foot button:hover { background: #7C3AED; }
 .chat-foot button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
 
-@media (max-width: 700px) { .sidebar { display: none; } .chat-foot { padding: 10px 12px; } }
+@media (max-width: 700px) { 
+  .sidebar { display: none; } 
+  .chat-scroll { padding: 20px 16px 16px; }
+  .msg.user { max-width: 85%; }
+  .chat-foot-wrap { padding: 12px 16px 20px; }
+}
 
 /* Video preview modal */
 .overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.45); backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center; padding: 40px; }
@@ -176,30 +196,30 @@ a { color: var(--pink); text-decoration: none; }
 
   <!-- Main -->
   <div class="main">
-    <div class="main-header">
-      <h2 id="chat-title">全局问答</h2>
-      <span id="chat-hint" style="font-size:12px;color:var(--text-muted)">基于所有已解析视频内容</span>
-    </div>
-    <div class="chat-body" id="chat-body">
-      <div class="empty-state" id="empty-state">
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-          <path d="M8 11h6"/><path d="M8 8h4"/><path d="M8 14h3"/>
-        </svg>
-        <span>输入问题，AI 将跨视频检索并回答</span>
+    <div class="chat-scroll" id="chat-scroll">
+      <div class="chat-container" id="chat-body">
+        <div class="empty-state" id="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            <path d="M8 11h6"/><path d="M8 8h4"/><path d="M8 14h3"/>
+          </svg>
+          <span style="font-size:15px">输入问题，AI 将跨所有视频和文章检索并回答</span>
+        </div>
       </div>
+      <div class="typing" id="typing">正在检索知识库...</div>
     </div>
-    <div class="typing" id="typing">正在检索知识库...</div>
-    <div class="chat-foot">
-      <textarea id="question-input" placeholder="问点什么？" rows="1"></textarea>
-      <button id="send-btn">发送</button>
+    <div class="chat-foot-wrap">
+      <div class="chat-foot">
+        <textarea id="question-input" placeholder="向 AI 提问..." rows="1"></textarea>
+        <button id="send-btn">发送</button>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
 const $=s=>document.querySelector(s);
-const body=$('#chat-body'),inp=$('#question-input'),btn=$('#send-btn'),empty=$('#empty-state');
+const body=$('#chat-body'),scrollEl=$('#chat-scroll'),inp=$('#question-input'),btn=$('#send-btn'),empty=$('#empty-state');
 
 /* Theme */
 (function(){
@@ -463,12 +483,12 @@ function updateChatTitle(){ $('#chat-title').textContent=chatTitle; }
 
 function renderChatHistory(){
   body.innerHTML='';
-  if(!chatMsgs.length){ body.innerHTML='<div class="empty-state"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M8 11h6"/><path d="M8 8h4"/><path d="M8 14h3"/></svg><span>输入问题，AI 将跨视频检索并回答</span></div>'; return }
+  if(!chatMsgs.length){ body.innerHTML='<div class="empty-state"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M8 11h6"/><path d="M8 8h4"/><path d="M8 14h3"/></svg><span style="font-size:15px">输入问题，AI 将跨所有视频和文章检索并回答</span></div>'; return }
   chatMsgs.forEach(m=>{
-    if(m.role==='user') body.innerHTML+=`<div class="msg user">${escHtml(m.content)}</div>`;
-    else body.innerHTML+=`<div class="msg ai">${m.content}</div>`;
+    if(m.role==='user') body.innerHTML+=`<div class="msg-row user"><div class="msg user">${escHtml(m.content)}</div></div>`;
+    else body.innerHTML+=`<div class="msg-row ai"><div class="msg ai"><div class="content">${m.content}</div></div></div>`;
   });
-  body.scrollTop=body.scrollHeight;
+  scrollEl.scrollTop=scrollEl.scrollHeight;
 }
 
 $('#kb-chat-new-btn').addEventListener('click',()=>{
@@ -493,30 +513,34 @@ async function sendQuestion(){
   chatMsgs.push({role:'user',content:q});
   renderChatHistory();
   inp.value=''; btn.disabled=true; $('#typing').classList.add('show');
-  const msgDiv=document.createElement('div');
-  msgDiv.className='msg ai'; msgDiv.textContent='检索中...';
-  body.appendChild(msgDiv);
-  body.scrollTop=body.scrollHeight;
+  const row=document.createElement('div'); row.className='msg-row ai';
+  const msgDiv=document.createElement('div'); msgDiv.className='msg ai';
+  msgDiv.innerHTML='<div class="content">检索中...</div>';
+  row.appendChild(msgDiv); body.appendChild(row);
+  scrollEl.scrollTop=scrollEl.scrollHeight;
 
   try{
-    const r=await fetch('/api/kb/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q, deepseek_key: getKey()})});
+    // 提取最近几轮对话作为上下文（排除最后一条 user 消息，因为它就是当前 q）
+    const history = chatMsgs.slice(-7).filter(m => m.role !== 'system');
+    const r=await fetch('/api/kb/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q, deepseek_key: getKey(), history})});
     const d=await r.json();
     if(d.status==='success'){
-      let html = marked.parse(d.reply);
+      let html = '<div class="content">' + marked.parse(d.reply);
       if(d.sources&&d.sources.length){
-        html+='<div style="margin-top:10px;font-size:12px;color:var(--text-muted)">📂 参考：';
+        html+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted)">📂 参考：';
         d.sources.forEach(s=>html+=`<span class="source-tag" data-vid="${s.vid}" data-type="${s.type||'video'}">${escHtml(s.title)}</span>`);
         html+='</div>';
       }
+      html+='</div>';
       msgDiv.innerHTML=html;
       chatMsgs.push({role:'assistant',content:html});
       saveKbChat();
     }else{
-      msgDiv.innerHTML=`<span style="color:var(--error)">${escHtml(d.error||'请求失败')}</span>`;
+      msgDiv.innerHTML='<div class="content" style="color:var(--error)">'+escHtml(d.error||'请求失败')+'</div>';
     }
   }catch(e){ msgDiv.innerHTML='<span style="color:var(--error)">网络错误</span>'; }
   $('#typing').classList.remove('show'); btn.disabled=false;
-  body.scrollTop=body.scrollHeight; inp.focus();
+  scrollEl.scrollTop=scrollEl.scrollHeight; inp.focus();
 }
 
 function getKey(){ try{ return JSON.parse(localStorage.getItem('deepseek_key')||'""'); }catch(e){return ''} }

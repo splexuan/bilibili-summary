@@ -65,6 +65,10 @@ pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 可选：B站 Cookie（解决下载限速）、HTTP/SOCKS 代理。
 
+## 界面预览
+
+![首页](static/example/%E9%A6%96%E9%A1%B5.png)
+
 ## 技术栈
 
 | 层级 | 方案 |

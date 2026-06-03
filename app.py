@@ -943,6 +943,7 @@ def api_kb_ask():
     question = (data.get("question") or "").strip()
     api_key = (data.get("deepseek_key") or "").strip()
     target_vid = (data.get("vid") or "").strip()  # 单视频/文章模式
+    history = data.get("history") or []  # 对话历史 [{role, content}, ...]
 
     if not question:
         return jsonify({"reply": "", "status": "error", "error": "问题不能为空"})
@@ -953,11 +954,32 @@ def api_kb_ask():
 
     from downloader import load_metadata, check_cached_transcript
     from kb_index import rank_summary_videos
-    from summarizer import rag_search
+    from summarizer import rag_search, chat as deepseek_chat
     from db import load_article
 
+    # 查询重写：有历史时，让 AI 把短追问改写成完整查询
+    search_query = question
+    if history and len(question) <= 15:
+        try:
+            rewrite_prompt = "根据对话上下文，把用户的追问改写成一个完整、清晰的搜索查询语句（30字以内）。\n\n"
+            for m in history[-4:]:
+                if isinstance(m, dict) and m.get("role") in ("user", "assistant"):
+                    c = m.get("content", "")
+                    if c: rewrite_prompt += f"{'用户' if m['role']=='user' else 'AI'}: {c[:300]}\n"
+            rewrite_prompt += f"用户追问: {question}\n改写后的查询:"
+            r = deepseek_chat([
+                {"role": "system", "content": "你是查询改写器，只输出改写后的查询语句，不要解释。"},
+                {"role": "user", "content": rewrite_prompt}
+            ], api_key)
+            rewritten = r.get("reply", "").strip()
+            if rewritten and len(rewritten) > 2:
+                search_query = rewritten
+                logger.info("查询重写: '%s' → '%s'", question, search_query)
+        except Exception:
+            pass
+
     # 第一步：用持久化 summary 索引初筛相关视频/文章
-    video_scores, has_summaries = rank_summary_videos(question, target_vid)
+    video_scores, has_summaries = rank_summary_videos(search_query, target_vid)
 
     if not has_summaries:
         return jsonify({"reply": "", "status": "error", "error": "还没有已解析的视频或文章"})
@@ -969,21 +991,17 @@ def api_kb_ask():
     sources = []
     for rid, _ in video_scores[:3]:
         if rid.startswith("A_"):
-            # 文章
             a = load_article(rid)
-            if not a or not a.get("text"):
-                continue
-            hits = rag_search(rid, a["text"], question, top_k=3)
+            if not a or not a.get("text"): continue
+            hits = rag_search(rid, a["text"], search_query, top_k=3)
             if hits:
                 title = a.get("title", rid)
                 context_parts.append(f"【文章：{title}】\n" + hits)
                 sources.append({"vid": rid, "title": title, "type": "article"})
         else:
-            # 视频
             transcript = check_cached_transcript(rid)
-            if not transcript:
-                continue
-            hits = rag_search(rid, transcript, question, top_k=3)
+            if not transcript: continue
+            hits = rag_search(rid, transcript, search_query, top_k=3)
             if hits:
                 meta = load_metadata(rid) or {}
                 title = meta.get("title", rid)
@@ -995,22 +1013,31 @@ def api_kb_ask():
 
     context = "\n\n=====\n\n".join(context_parts)
 
+    # 构建消息列表
+    messages = [{"role": "system", "content": "你是一个知识库助手。回复要求：1) 用加粗标题分点，每点简明扼要 2) 关键结论用**加粗**突出 3) 每个观点标注来源 4) 段落间留空行 5) 不要客套话，直接给答案。"}]
+
+    if history:
+        for msg in history:
+            if isinstance(msg, dict) and msg.get("role") in ("user", "assistant"):
+                content = msg.get("content", "")
+                if content and content.strip():
+                    messages.append({"role": msg["role"], "content": content[:2000]})
+
     # 第三步：发给 DeepSeek
-    prompt = f"""你是知识库问答助手。用户问了一个问题，以下是从多个视频中找到的相关原文。请基于这些内容回答，条理清晰，并标注信息来自哪个视频。
+    prompt = f"""以下是多个视频/文章的相关原文。请尽量综合所有来源回答，每个来源都标注。如有冲突观点也要说明。直接回答，标注来源。
+
+## 相关原文
+{context}
 
 ## 用户问题
 {question}
 
-## 相关原始内容
-{context}
-
 请回答："""
 
+    messages.append({"role": "user", "content": prompt})
+
     from summarizer import chat as deepseek_chat
-    result = deepseek_chat([
-        {"role": "system", "content": "你是一个知识库助手，回答基于提供的原文，标注来源视频。用语简洁清晰。"},
-        {"role": "user", "content": prompt},
-    ], api_key)
+    result = deepseek_chat(messages, api_key)
 
     result["sources"] = sources
     return jsonify(result)
