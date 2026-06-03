@@ -438,31 +438,28 @@ async function deleteKbChat(id){
 
 async function saveKbChat(){
   if(!chatId||!chatMsgs.length)return;
-  // 立即快照，防止切换时被覆盖
   const sid=chatId, smsgs=[...chatMsgs];
   const title=smsgs.find(m=>m.role==='user')?.content?.slice(0,20)||'新对话';
   chatCache[sid]={id:sid,title,messages:smsgs,time:new Date().toISOString().slice(0,16).replace('T',' ')};
   try{
     await fetch('/api/kb/chat/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:sid,title,messages:smsgs})});
-    document.querySelectorAll('.session-item').forEach(s=>s.classList.remove('active'));
-    const item=$(`.session-item[data-id="${sid}"]`);
-    if(item) { item.querySelector('.si-text').textContent=title; item.classList.add('active'); }
+    // 只更新列表项（标题可能变了），不动 active 状态
+    const item=document.querySelector(`.session-item[data-id="${sid}"]`);
+    if(item) item.querySelector('.si-text').textContent=title;
     else {
       const sl=$('#kb-chat-session-list');
       const div=document.createElement('div');
-      div.className='session-item active';
+      div.className='session-item';
       div.setAttribute('data-id',sid);
       div.innerHTML=`<span class="si-text">${escHtml(title)}</span><span class="si-del">✕</span>`;
-      div.querySelector('.si-text').onclick=()=>kbSwitchChat(sid);
-      div.querySelector('.si-del').onclick=e=>{e.stopPropagation();if(confirm('删除此对话？'))deleteKbChat(sid)};
       sl.insertBefore(div,sl.firstChild);
     }
   }catch(e){}
 }
 
 async function kbSwitchChat(id){
-  // 先保存当前对话（异步，不阻塞）
-  saveKbChat();
+  // 先保存当前对话
+  await saveKbChat();
   const cached=chatCache[id];
   if(cached){ chatMsgs=[...cached.messages]; chatId=id; chatTitle=cached.title||'对话'; }
   else {
@@ -479,7 +476,7 @@ async function kbSwitchChat(id){
   if(el) el.classList.add('active');
 }
 
-function updateChatTitle(){ $('#chat-title').textContent=chatTitle; }
+function updateChatTitle(){ const el=$('#chat-title'); if(el) el.textContent=chatTitle; }
 
 function renderChatHistory(){
   body.innerHTML='';

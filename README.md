@@ -2,6 +2,14 @@
 
 本地运行的 B站/YouTube 视频 AI 总结工具，同时支持文章总结。全流程自动化：解析 → 字幕/音频 → 语音转文字 → AI 总结 → 知识库问答。
 
+## 界面预览
+
+![首页预览](static/example/homepage.png)
+
+![知识库预览](static/example/knowledge.png)
+
+![技术说明](static/example/explain.png)
+
 ## 功能
 
 **视频总结**
@@ -64,12 +72,6 @@ pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 在 ⚙ 设置中填写 [DeepSeek API Key](https://platform.deepseek.com/api_keys)，保存在 `~/.bilibili-summary-key`，一次配置永久生效。
 
 可选：B站 Cookie（解决下载限速）、HTTP/SOCKS 代理。
-
-## 界面预览
-
-![首页预览](static/example/homepage.png)
-
-![技术说明](static/example/explain.png)
 
 ## 技术栈
 
