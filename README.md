@@ -4,11 +4,11 @@
 
 ## 界面预览
 
-![首页预览](static/example/homepage.png)
-
-![知识库预览](static/example/knowledge.png)
-
-![技术说明](static/example/explain.png)
+<p align="center">
+  <img src="static/example/homepage.png" height="200" alt="首页" />
+  <img src="static/example/knowledge.png" height="200" alt="知识库" />
+  <img src="static/example/explain.png" height="200" alt="技术说明" />
+</p>
 
 ## 功能
 
