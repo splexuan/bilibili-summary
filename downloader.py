@@ -139,9 +139,14 @@ def get_video_info(url: str) -> dict:
 
 # ─── 存储路径 ─────────────────────────────────────────
 
+_AUDIO_DIR = OUTPUT_DIR / "_audio"
+
+
 def vid_dir(vid: str) -> Path:
-    """兼容旧路径（仅用于封面图路径）"""
-    return OUTPUT_DIR / "thumbnails"
+    """返回视频数据目录（兼容旧路径清理）"""
+    if not _SAFE_VID_RE.match(vid):
+        raise InvalidPathError("非法的视频 ID")
+    return OUTPUT_DIR / vid
 
 
 def save_metadata(vid: str, info: dict):
@@ -160,7 +165,7 @@ def load_metadata(vid: str) -> dict | None:
 
 def check_cached_audio(vid: str) -> Path | None:
     """检查是否已有缓存的 WAV 文件"""
-    wav = vid_dir(vid) / "audio.wav"
+    wav = _AUDIO_DIR / f"{vid}_audio.wav"
     return wav if wav.exists() else None
 
 
@@ -178,21 +183,13 @@ def check_cached_summary(vid: str) -> str | None:
 
 # ─── 字幕提取 ─────────────────────────────────────────
 
-def check_cached_subtitles(vid: str) -> str | None:
-    """检查是否有缓存的字幕文本"""
-    p = vid_dir(vid) / "subtitles.txt"
-    if p.exists():
-        content = p.read_text(encoding="utf-8").strip()
-        return content if content else None
-    return None
-
-
 def extract_subtitles(vid: str, url: str, platform: str = "bilibili") -> str | None:
     """
     提取 B站/YouTube 视频字幕（自动字幕优先，其次手动字幕）
     返回字幕纯文本，无字幕返回 None
+    字幕文本会由调用方 save_transcript 存入 DB
     """
-    d = vid_dir(vid)
+    d = OUTPUT_DIR / "_subs"
     d.mkdir(parents=True, exist_ok=True)
 
     if platform == "bilibili":
@@ -220,13 +217,13 @@ def extract_subtitles(vid: str, url: str, platform: str = "bilibili") -> str | N
 
         if srt_files:
             text = _parse_srt(srt_files[0])
+            # 清理临时 SRT 文件
+            for f in d.glob("subtitles.*"):
+                try:
+                    f.unlink()
+                except Exception:
+                    pass
             if text.strip():
-                (d / "subtitles.txt").write_text(text, encoding="utf-8")
-                for f in srt_files:
-                    try:
-                        f.unlink()
-                    except Exception:
-                        pass
                 logger.info("提取字幕成功 %s，共 %d 字", vid, len(text))
                 return text
 
@@ -283,23 +280,15 @@ def _get_cookie_args(url_or_vid: str = "") -> list:
 
 def download_audio(url: str, vid: str, on_progress=None) -> Path | None:
     """
-    下载视频音频到 output/{vid}/audio.wav
+    下载视频音频到 output/_audio/{vid}_audio.wav
     直接下载 m4a → ffmpeg 转 WAV 16kHz 单声道
 
     on_progress(dict) — 下载进度回调，收到 {"percent": 12.5, "speed": "2.3MiB/s", "eta": "00:14"}
     """
-    d = vid_dir(vid)
-    d.mkdir(parents=True, exist_ok=True)
+    _AUDIO_DIR.mkdir(parents=True, exist_ok=True)
 
-    # 清理残留 .part 文件
-    for stale in d.glob("*.part"):
-        try:
-            stale.unlink()
-        except Exception:
-            pass
-
-    output_wav = d / "audio.wav"
-    temp_dl = d / "_dl"
+    output_wav = _AUDIO_DIR / f"{vid}_audio.wav"
+    temp_dl = _AUDIO_DIR / f"{vid}_dl"
 
     try:
         # 步骤1: 流式下载 m4a 音频（可读取进度）
@@ -343,7 +332,7 @@ def download_audio(url: str, vid: str, on_progress=None) -> Path | None:
         # 查找下载的文件
         downloaded = None
         for ext in ["m4a", "mp3", "mp4", "webm", "opus", "aac"]:
-            candidate = d / f"_dl.{ext}"
+            candidate = _AUDIO_DIR / f"{vid}_dl.{ext}"
             if candidate.exists() and candidate.stat().st_size > 1024:
                 downloaded = candidate
                 break

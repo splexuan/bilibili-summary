@@ -19,9 +19,9 @@ from flask import stream_with_context
 from downloader import (
     get_video_info, download_audio,
     check_cached_audio, check_cached_transcript, check_cached_summary,
-    check_cached_subtitles, extract_subtitles,
+    extract_subtitles,
     save_metadata, load_metadata, save_transcript, save_summary,
-    list_history, delete_video, vid_dir, InvalidPathError,
+    list_history, delete_video, InvalidPathError,
     OUTPUT_DIR,
 )
 from transcriber import transcribe, load_recognizer_for_status
@@ -219,25 +219,26 @@ def api_process():
             transcript_from_subs = False
             platform = info.get("platform", "")
             if vid:
-                cached_txt = check_cached_transcript(vid)
-                if not cached_txt:
-                    cached_sub = check_cached_subtitles(vid)
-                    if cached_sub:
-                        transcript_text = cached_sub
+                # 字幕/转写文本统一走 DB 缓存
+                transcript_text = check_cached_transcript(vid) or ""
+                if not transcript_text and platform in ("bilibili", "youtube"):
+                    send_sse(task_id, "step", {
+                        "step": 2, "name": "获取文字",
+                        "status": "running",
+                        "message": "正在尝试提取字幕...",
+                    })
+                    sub_text = extract_subtitles(vid, url, platform)
+                    if sub_text:
+                        transcript_text = sub_text
                         transcript_from_subs = True
-                    elif platform in ("bilibili", "youtube"):
-                        send_sse(task_id, "step", {
-                            "step": 2, "name": "获取文字",
-                            "status": "running",
-                            "message": "正在尝试提取字幕...",
-                        })
-                        sub_text = extract_subtitles(vid, url, platform)
-                        if sub_text:
-                            transcript_text = sub_text
-                            transcript_from_subs = True
+                elif transcript_text:
+                    transcript_from_subs = True
 
             # ── 步骤2: 获取文字 ──
             if transcript_from_subs:
+                # 字幕提取成功，保存到 DB
+                if vid and transcript_text:
+                    save_transcript(vid, transcript_text)
                 send_sse(task_id, "step", {
                     "step": 2, "name": "获取文字",
                     "status": "done",
@@ -1421,12 +1422,7 @@ def api_history_resummarize(vid):
         save_summary(vid, summary["summary"])
 
         # 清除旧的 TTS 缓存（总结文字已变，旧语音无意义）
-        vd = vid_dir(vid)
-        for f in vd.glob("tts_*.mp3"):
-            try:
-                f.unlink()
-            except Exception:
-                pass
+        # TTS 文件现存在系统临时目录，自动清理，无需手动删除
 
         return jsonify({
             "status": "success",
@@ -1474,13 +1470,6 @@ def api_history_resummarize_stream(vid):
             # 缓存总结
             if full_text:
                 save_summary(vid, full_text)
-                # 清除旧 TTS
-                vd = vid_dir(vid)
-                for f in vd.glob("tts_*.mp3"):
-                    try:
-                        f.unlink()
-                    except Exception:
-                        pass
                 yield "data: {}\n\n".format(json.dumps({"done": True, "model": "deepseek-v4-flash"}, ensure_ascii=False))
             yield "data: [DONE]\n\n"
         except Exception as e:
@@ -1533,9 +1522,9 @@ def api_tts():
 @app.route("/api/audio/<vid>/<filename>")
 def api_audio(vid, filename):
     """提供缓存的音频文件"""
-    from downloader import vid_dir
+    from downloader import _AUDIO_DIR
     filename = _safe_audio_filename(filename)
-    path = vid_dir(vid) / filename
+    path = _AUDIO_DIR / f"{vid}_{filename}"
     if path.exists():
         return send_file(str(path), mimetype="audio/mpeg")
     return jsonify({"status": "error", "error": "文件不存在"}), 404

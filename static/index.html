@@ -1916,7 +1916,7 @@ async function start(){
   running=true;btn.disabled=true;btn.innerHTML='<span class="spin"></span>处理中';
   resetSteps();$('#progress-card').style.display='block';$('#video-info').classList.remove('show');
   $('#content-summary').textContent='';$('#content-summary').className='rc-body';$('#meta-summary').textContent='';
-  tsText='';sumText='';$('#btn-export').classList.remove('show');$('#btn-transcript').classList.remove('show');$('#btn-copy').classList.remove('show');$('#btn-chat').classList.remove('show');$('#act-more-wrap').classList.remove('show');$('#btn-resummarize').classList.remove('show');$('#btn-tts').classList.remove('show');
+  currentVid='';tsText='';sumText='';streamBuf='';streaming=false;$('#btn-export').classList.remove('show');$('#btn-transcript').classList.remove('show');$('#btn-copy').classList.remove('show');$('#btn-chat').classList.remove('show');$('#act-more-wrap').classList.remove('show');$('#btn-resummarize').classList.remove('show');$('#btn-tts').classList.remove('show');
   chatMsgs=[];chatId='';
   $('#content-summary').textContent='';$('#content-summary').className='rc-body';
   chatMsgs.length=0;
