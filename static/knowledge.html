@@ -109,8 +109,8 @@ a { color: var(--pink); text-decoration: none; }
 .msg.ai .source-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--purple); background: #F5F3FF; padding: 4px 12px; border-radius: 6px; margin: 12px 8px 0 0; font-weight: 600; cursor: pointer; transition: .15s; }
 .msg.ai .source-tag:hover { background: #EDE9FE; transform: translateY(-1px); }
 
-.typing { color: var(--text-muted); font-size: 13px; padding: 8px 0; display: none; }
-.typing.show { display: block; }
+
+
 @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
 /* Input area */
@@ -206,7 +206,7 @@ a { color: var(--pink); text-decoration: none; }
           <span style="font-size:15px">输入问题，AI 将跨所有视频和文章检索并回答</span>
         </div>
       </div>
-      <div class="typing" id="typing">正在检索知识库...</div>
+
     </div>
     <div class="chat-foot-wrap">
       <div class="chat-foot">
@@ -486,7 +486,7 @@ function renderChatHistory(){
   if(!chatMsgs.length){ body.innerHTML='<div class="empty-state"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M8 11h6"/><path d="M8 8h4"/><path d="M8 14h3"/></svg><span style="font-size:15px">输入问题，AI 将跨所有视频和文章检索并回答</span></div>'; return }
   chatMsgs.forEach(m=>{
     if(m.role==='user') body.innerHTML+=`<div class="msg-row user"><div class="msg user">${escHtml(m.content)}</div></div>`;
-    else body.innerHTML+=`<div class="msg-row ai"><div class="msg ai"><div class="content">${m.content}</div></div></div>`;
+    else body.innerHTML+=`<div class="msg-row ai"><div class="msg ai">${m.content}</div></div>`;
   });
   scrollEl.scrollTop=scrollEl.scrollHeight;
 }
@@ -512,7 +512,7 @@ async function sendQuestion(){
 
   chatMsgs.push({role:'user',content:q});
   renderChatHistory();
-  inp.value=''; btn.disabled=true; $('#typing').classList.add('show');
+  inp.value=''; btn.disabled=true;
   const row=document.createElement('div'); row.className='msg-row ai';
   const msgDiv=document.createElement('div'); msgDiv.className='msg ai';
   msgDiv.innerHTML='<div class="content">检索中...</div>';
@@ -525,21 +525,22 @@ async function sendQuestion(){
     const r=await fetch('/api/kb/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q, deepseek_key: getKey(), history})});
     const d=await r.json();
     if(d.status==='success'){
-      let html = '<div class="content">' + marked.parse(d.reply);
+      let bodyHtml = marked.parse(d.reply);
+      let sourcesHtml = '';
       if(d.sources&&d.sources.length){
-        html+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted)">📂 参考：';
-        d.sources.forEach(s=>html+=`<span class="source-tag" data-vid="${s.vid}" data-type="${s.type||'video'}">${escHtml(s.title)}</span>`);
-        html+='</div>';
+        sourcesHtml='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted)">📂 参考：';
+        d.sources.forEach(s=>sourcesHtml+=`<span class="source-tag" data-vid="${s.vid}" data-type="${s.type||'video'}">${escHtml(s.title)}</span>`);
+        sourcesHtml+='</div>';
       }
-      html+='</div>';
-      msgDiv.innerHTML=html;
-      chatMsgs.push({role:'assistant',content:html});
+      // 显示时包一层 content，存储时只存内容（不含 content 包装器）
+      msgDiv.innerHTML='<div class="content">' + bodyHtml + sourcesHtml + '</div>';
+      chatMsgs.push({role:'assistant',content:'<div class="content">' + bodyHtml + sourcesHtml + '</div>'});
       saveKbChat();
     }else{
       msgDiv.innerHTML='<div class="content" style="color:var(--error)">'+escHtml(d.error||'请求失败')+'</div>';
     }
   }catch(e){ msgDiv.innerHTML='<span style="color:var(--error)">网络错误</span>'; }
-  $('#typing').classList.remove('show'); btn.disabled=false;
+  btn.disabled=false;
   scrollEl.scrollTop=scrollEl.scrollHeight; inp.focus();
 }
 
