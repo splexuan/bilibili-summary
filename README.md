@@ -85,8 +85,10 @@ SenseVoice Small 语音识别模型（~229MB）在首次使用语音转写时提
 在 Web 界面 ⚙ 设置中填写 [DeepSeek API Key](https://platform.deepseek.com/api_keys)，保存至 `~/.bilibili-summary-key`，一次配置永久生效。
 
 可选配置：
-- **B站 Cookie**：解决高画质下载限速，在设置页粘贴浏览器 Cookie
 - **代理**：HTTP/SOCKS 代理，用于 YouTube 访问
+
+必填配置：
+- **B站 Cookie**：B站下载视频必须提供，在设置页粘贴浏览器 Cookie 即可
 
 ## 功能
 
