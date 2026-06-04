@@ -20,18 +20,8 @@ BASE_DIR = Path(__file__).parent
 
 # 模型目录（可配置）
 _MODEL_ENV_VAR = "BILIBILI_SUMMARY_MODEL_DIR"
-_env_model = os.environ.get(_MODEL_ENV_VAR, "").strip()
-if _env_model:
-    MODEL_DIR = Path(_env_model)
-else:
-    _LOCAL_MODEL = BASE_DIR / "models" / "sherpa-onnx-sense-voice-small"
-    _FALLBACK_MODEL = Path.home() / "VoiceDiscern" / "sherpa-onnx-sense-voice-small"
-    if _LOCAL_MODEL.exists():
-        MODEL_DIR = _LOCAL_MODEL
-    elif _FALLBACK_MODEL.exists():
-        MODEL_DIR = _FALLBACK_MODEL
-    else:
-        MODEL_DIR = None  # 延迟报错
+_LOCAL_MODEL = BASE_DIR / "models" / "sherpa-onnx-sense-voice-small"
+_FALLBACK_MODEL = Path.home() / "VoiceDiscern" / "sherpa-onnx-sense-voice-small"
 
 # 全局识别器（线程安全：只读推理）
 _recognizer = None
@@ -42,15 +32,25 @@ _NUM_WORKERS = max(2, multiprocessing.cpu_count() // 2)
 
 
 def _get_model_dir() -> Path:
-    """获取模型目录，如果未找到则抛出异常"""
-    if MODEL_DIR is None:
+    """获取模型目录（每次调用时检查，下载模型后无需重启即可生效）"""
+    _env_model = os.environ.get(_MODEL_ENV_VAR, "").strip()
+    if _env_model:
+        p = Path(_env_model)
+        if p.exists():
+            return p
         raise FileNotFoundError(
-            f"模型目录未找到。请通过以下任一方式配置：\n"
-            f"1. 设置环境变量 {_MODEL_ENV_VAR}\n"
-            f"2. 将模型放在 {_LOCAL_MODEL}\n"
-            f"3. 将模型放在 {_FALLBACK_MODEL}"
+            f"环境变量 {_MODEL_ENV_VAR} 指定的模型目录不存在: {p}"
         )
-    return MODEL_DIR
+    if _LOCAL_MODEL.exists():
+        return _LOCAL_MODEL
+    if _FALLBACK_MODEL.exists():
+        return _FALLBACK_MODEL
+    raise FileNotFoundError(
+        f"模型目录未找到。请通过以下任一方式配置：\n"
+        f"1. 设置环境变量 {_MODEL_ENV_VAR}\n"
+        f"2. 将模型放在 {_LOCAL_MODEL}\n"
+        f"3. 将模型放在 {_FALLBACK_MODEL}"
+    )
 
 
 def _load_recognizer():
