@@ -23,7 +23,7 @@
 
 ```bash
 # 1. 克隆项目
-git clone https://gitee.com/slexuan/bilibili-summary.git
+git clone https://github.com/splexuan/bilibili-summary.git
 cd bilibili-summary
 
 # 2. 创建虚拟环境
