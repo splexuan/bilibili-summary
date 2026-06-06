@@ -11,6 +11,13 @@
   --pink: #FB7299;
   --pink-light: #FFF0F4;
   --pink-dark: #D94A70;
+  --indigo: #6366F1;
+  --indigo-light: #EEF2FF;
+  --indigo-dark: #4F46E5;
+  --blue: #3B82F6;
+  --blue-light: #EFF6FF;
+  --violet: #8B5CF6;
+  --violet-light: #F5F3FF;
   --bg: #F6F7F9;
   --surface: #FFFFFF;
   --text: #0F172A;
@@ -21,12 +28,14 @@
   --success: #10B981;
   --error: #EF4444;
   --running: #3B82F6;
-  --indigo: #6366F1;
   --shadow-sm: 0 1px 2px rgba(0,0,0,.04);
   --shadow: 0 1px 3px rgba(0,0,0,.05), 0 1px 2px rgba(0,0,0,.04);
   --shadow-lg: 0 8px 30px rgba(0,0,0,.08);
+  --shadow-primary: 0 4px 14px rgba(99,102,241,.28);
+  --shadow-primary-lg: 0 8px 24px rgba(99,102,241,.40);
   --radius: 14px;
   --radius-sm: 9px;
+  --ease: cubic-bezier(.4, 0, .2, 1);
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 }
 
@@ -146,16 +155,16 @@ body {
 }
 
 .info-btn {
-  height: 26px; border: 1.5px solid var(--border-strong);
+  height: 28px; border: 1.5px solid var(--border-strong);
   border-radius: 7px; background: transparent; color: var(--text-sec);
   font-size: 12px; font-weight: 550; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: all .15s; padding: 0 10px; line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+  transition: all .18s var(--ease); padding: 0 10px; line-height: 1;
   font-family: var(--font); flex-shrink: 0; white-space: nowrap;
   letter-spacing: .2px;
 }
-.info-btn:hover { border-color: var(--pink); color: var(--pink); background: var(--pink-light); }
-.info-btn svg { display: none; }
+.info-btn:hover { border-color: var(--pink); color: var(--pink); background: var(--pink-light); transform: translateY(-1px); }
+.info-btn svg { width: 13px; height: 13px; display: inline-block; flex-shrink: 0; }
 
 /* Card */
 .card {
@@ -173,9 +182,10 @@ body {
 .mode-tab {
   flex: 1; padding: 8px; border: 1.5px solid var(--border);
   border-radius: 8px; background: transparent; color: var(--text-muted);
-  font-size: 13px; font-family: var(--font); cursor: pointer; transition: all .15s;
-  font-weight: 600;
+  font-size: 13px; font-family: var(--font); cursor: pointer; transition: all .18s var(--ease);
+  font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 5px;
 }
+.mode-tab svg { width: 14px; height: 14px; flex-shrink: 0; }
 .mode-tab.active { border-color: var(--pink); color: var(--pink); background: var(--pink-light); }
 .mode-tab:hover:not(.active) { border-color: var(--border-strong); color: var(--text-sec); }
 
@@ -217,17 +227,32 @@ body {
 .btn {
   width: 100%; padding: 12.5px; border: none; border-radius: var(--radius-sm);
   font-size: 14.5px; font-weight: 650; cursor: pointer;
-  transition: all .18s; outline: none; font-family: var(--font);
+  transition: all .18s var(--ease); outline: none; font-family: var(--font);
   display: flex; align-items: center; justify-content: center; gap: 8px;
+  position: relative; overflow: hidden;
 }
+.btn svg { width: 15px; height: 15px; flex-shrink: 0; }
 .btn-go {
-  background: linear-gradient(135deg, var(--pink), var(--pink-dark));
+  background: linear-gradient(135deg, var(--pink) 0%, var(--pink-dark) 100%);
   color: white; letter-spacing: .5px;
   box-shadow: 0 2px 10px rgba(251,114,153,.25);
+}
+.btn-go::after {
+  content: ''; position: absolute; top: 0; left: -100%;
+  width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.32), transparent);
+  animation: btnShine 3.5s var(--ease) infinite;
+  pointer-events: none;
+}
+@keyframes btnShine {
+  0%   { left: -100%; }
+  55%  { left: 120%; }
+  100% { left: 120%; }
 }
 .btn-go:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(251,114,153,.35); }
 .btn-go:active { transform: translateY(0); }
 .btn-go:disabled { background: #E8ECF0; color: #94A3B8; box-shadow: none; cursor: not-allowed; transform: none; }
+.btn-go:disabled::after { display: none; }
 .btn-go:disabled .spin { border-color: rgba(0,0,0,.08); border-top-color: #94A3B8; }
 .spin {
   width: 15px; height: 15px; border: 2px solid rgba(255,255,255,.25);
@@ -358,14 +383,17 @@ body {
   padding: 6px 12px; border: 1.5px solid var(--border);
   border-radius: 7px; background: transparent;
   font-size: 11.5px; font-family: var(--font); color: var(--text-sec);
-  cursor: pointer; transition: all .15s; white-space: nowrap;
-  font-weight: 550;
+  cursor: pointer; transition: all .18s var(--ease); white-space: nowrap;
+  font-weight: 550; line-height: 1;
 }
 .act.show { display: inline-flex; }
-.act:hover { border-color: var(--pink); color: var(--pink); background: var(--pink-light); }
-.act.act-ts:hover { border-color: var(--indigo); color: var(--indigo); background: #EEF2FF; }
-.act.act-chat:hover { border-color: #8B5CF6; color: #8B5CF6; background: #F5F3FF; }
-.act svg { width: 13px; height: 13px; flex-shrink: 0; }
+.act:hover { border-color: var(--pink); color: var(--pink); background: var(--pink-light); transform: translateY(-1px); }
+.act:hover svg { color: var(--pink); }
+.act.act-ts:hover { border-color: var(--indigo); color: var(--indigo); background: var(--indigo-light); }
+.act.act-ts:hover svg { color: var(--indigo); }
+.act.act-chat:hover { border-color: var(--violet); color: var(--violet); background: var(--violet-light); }
+.act.act-chat:hover svg { color: var(--violet); }
+.act svg { width: 13px; height: 13px; flex-shrink: 0; transition: color .18s var(--ease); }
 
 /* More dropdown */
 .act-more-wrap { position: relative; display: none; }
@@ -379,11 +407,8 @@ body {
   z-index: 10; min-width: 140px; padding: 4px; flex-direction: column;
 }
 .act-more-menu.open { display: flex; }
-.act-more-menu .act {
-  display: flex; width: 100%; text-align: left; border: none;
-  padding: 8px 12px; border-radius: 6px; font-size: 12px; justify-content: flex-start;
-}
-.act-more-menu .act:hover { background: var(--pink-light); }
+.act-more-menu .act { display: flex; width: 100%; text-align: left; border: none; padding: 8px 12px; border-radius: 6px; font-size: 12px; justify-content: flex-start; transform: none; }
+.act-more-menu .act:hover { background: var(--pink-light); transform: none; }
 
 /* Chat modal - sidebar layout */
 .chat-modal { max-width: 80vw !important; max-height: 70vh !important; width: 80vw; height: 70vh; transition: max-width .2s, max-height .2s, width .2s, height .2s; }
@@ -649,11 +674,25 @@ body {
       </div>
       <h1>B站视频总结</h1>
       <nav class="brand-nav" onclick="event.stopPropagation()">
-        <button class="info-btn" id="btn-theme" title="切换深色/浅色模式" onclick="toggleTheme()" style="font-size:14px">🌙</button>
-        <button class="info-btn" id="btn-settings">⚙ 设置</button>
-        <button class="info-btn" id="btn-knowledge" onclick="window.open('/knowledge','_blank')">📚 知识库</button>
-        <button class="info-btn" id="btn-history">🕐 历史</button>
-        <button class="info-btn" id="btn-info">ℹ 说明</button>
+        <button class="info-btn" id="btn-theme" title="切换深色/浅色模式" onclick="toggleTheme()" aria-label="切换主题">
+          <svg id="ico-theme" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <button class="info-btn" id="btn-settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          设置
+        </button>
+        <button class="info-btn" id="btn-knowledge" onclick="window.open('/knowledge','_blank')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          知识库
+        </button>
+        <button class="info-btn" id="btn-history">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+          历史
+        </button>
+        <button class="info-btn" id="btn-info">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="8"/><polyline points="11 12 12 12 12 16 13 16"/></svg>
+          说明
+        </button>
       </nav>
     </div>
 
@@ -690,15 +729,24 @@ body {
 
     <div class="card" id="input-card">
       <div class="mode-tabs">
-        <button class="mode-tab active" data-mode="video" onclick="switchMode('video')">📺 视频</button>
-        <button class="mode-tab" data-mode="article" onclick="switchMode('article')">📄 文章</button>
+        <button class="mode-tab active" data-mode="video" onclick="switchMode('video')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="15" height="14" rx="2"/><polygon points="22 7 17 12 22 17 22 7"/></svg>
+          视频
+        </button>
+        <button class="mode-tab" data-mode="article" onclick="switchMode('article')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+          文章
+        </button>
       </div>
       <div id="input-video">
         <div class="field">
           <label for="video-url">视频链接</label>
           <input type="url" id="video-url" placeholder="B站 / YouTube 视频链接..." autofocus>
         </div>
-        <button class="btn btn-go" id="btn-start">开始解析</button>
+        <button class="btn btn-go" id="btn-start">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          开始解析
+        </button>
       </div>
       <div id="input-article" style="display:none">
         <div class="field">
@@ -713,7 +761,10 @@ body {
           <label for="article-text">正文内容</label>
           <textarea id="article-text" placeholder="粘贴文章全文..." style="width:100%;height:160px;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font);color:var(--text);background:var(--bg);outline:none;resize:vertical;transition:.15s" onfocus="this.style.borderColor='var(--pink)';this.style.boxShadow='0 0 0 3px var(--pink-light)'" onblur="this.style.borderColor='var(--border)';this.style.boxShadow='none'"></textarea>
         </div>
-        <button class="btn btn-go" id="btn-article-start">AI 总结</button>
+        <button class="btn btn-go" id="btn-article-start">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L9.5 8.5 2 9.5l5.5 5L6 22l6-3.5 6 3.5-1.5-7.5 5.5-5-7.5-1z"/></svg>
+          AI 总结
+        </button>
       </div>
     </div>
 
@@ -755,7 +806,7 @@ body {
   <main class="main-area">
     <div class="result-card" id="result-card">
       <div class="rc-header">
-        <div class="rc-marker"></div>
+        <div class="rc-marker" style="background:linear-gradient(135deg,var(--indigo),var(--blue));box-shadow:0 0 8px rgba(99,102,241,.35)"></div>
         <h2>AI 总结</h2>
         <button class="act" id="btn-export" title="导出 Markdown">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 10v3a1 1 0 01-1 1H3a1 1 0 01-1-1v-3"/><path d="M8 2v9"/><path d="M5 5l3-3 3 3"/></svg>
@@ -772,9 +823,18 @@ body {
         <div class="act-more-wrap" id="act-more-wrap">
           <button class="act act-more" id="btn-more" title="更多操作">···</button>
           <div class="act-more-menu" id="more-menu">
-            <button class="act act-ts" id="btn-transcript" onclick="$('#btn-more').click()">📄 查看原文</button>
-            <button class="act" id="btn-resummarize" style="color:var(--pink)" onclick="$('#btn-more').click()">🔄 重新总结</button>
-            <button class="act" id="btn-tts" onclick="$('#btn-more').click()">🔊 朗读</button>
+            <button class="act act-ts" id="btn-transcript" onclick="$('#btn-more').click()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+              查看原文
+            </button>
+            <button class="act" id="btn-resummarize" style="color:var(--pink)" onclick="$('#btn-more').click()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              重新总结
+            </button>
+            <button class="act" id="btn-tts" onclick="$('#btn-more').click()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+              朗读
+            </button>
           </div>
         </div>
         <span class="rc-meta" id="meta-summary"></span>
@@ -793,8 +853,14 @@ body {
       <button class="modal-close" id="history-close">&times;</button>
     </div>
     <div style="padding:0 22px 8px;display:flex;gap:6px;flex-shrink:0">
-      <button class="mode-tab active" data-htype="video" onclick="switchHistoryType('video')">📺 视频</button>
-      <button class="mode-tab" data-htype="article" onclick="switchHistoryType('article')">📄 文章</button>
+      <button class="mode-tab active" data-htype="video" onclick="switchHistoryType('video')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="15" height="14" rx="2"/><polygon points="22 7 17 12 22 17 22 7"/></svg>
+        视频
+      </button>
+      <button class="mode-tab" data-htype="article" onclick="switchHistoryType('article')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+        文章
+      </button>
     </div>
     <div style="padding:0 22px 12px;flex-shrink:0">
       <input type="text" id="history-search" placeholder="搜索标题..." style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:var(--font);outline:none;background:var(--bg)" oninput="loadHistory(1)">
@@ -960,7 +1026,10 @@ body {
       <div class="chat-sidebar">
         <div class="chat-sidebar-head">
           <span style="font-weight:700;font-size:13px">对话列表</span>
-          <button id="chat-new-btn" style="border:1.5px solid var(--border);border-radius:6px;padding:3px 8px;font-size:12px;cursor:pointer;background:var(--bg);color:var(--pink)">＋ 新对话</button>
+          <button id="chat-new-btn" style="border:1.5px solid var(--border);border-radius:6px;padding:3px 8px;font-size:12px;cursor:pointer;background:var(--bg);color:var(--pink);display:inline-flex;align-items:center;gap:4px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            新对话
+          </button>
         </div>
         <div class="chat-session-list" id="chat-session-list"></div>
       </div>
@@ -969,7 +1038,9 @@ body {
         <div class="chat-main-head">
           <span id="chat-current-title" style="font-weight:700;font-size:15px">新对话</span>
           <div style="margin-left:auto;display:flex;gap:4px">
-            <button class="modal-close" id="chat-max" title="最大化" style="font-size:16px">⛶</button>
+            <button class="modal-close" id="chat-max" title="最大化" style="font-size:16px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M3 7V3h4M21 7V3h-4M3 17v4h4M21 17v4h-4"/></svg>
+            </button>
             <button class="modal-close" id="chat-close">&times;</button>
           </div>
         </div>
@@ -979,7 +1050,10 @@ body {
         <div class="chat-typing" id="chat-typing">AI 正在回复...</div>
         <div class="chat-foot">
           <input id="chat-input" type="text" placeholder="输入问题..." autocomplete="off">
-      <button id="chat-send">发送</button>
+      <button id="chat-send" style="display:inline-flex;align-items:center;gap:5px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        发送
+      </button>
     </div>
   </div>
 </div>
@@ -1001,7 +1075,7 @@ body {
 <div class="overlay" id="modal-overlay">
   <div class="modal">
     <div class="modal-head">
-      <div class="m-marker"></div>
+      <div class="m-marker" style="background:linear-gradient(135deg,var(--indigo),var(--blue))"></div>
       <h3>完整转写文字</h3>
       <span class="m-meta" id="modal-meta"></span>
       <button class="modal-close" id="modal-close">&times;</button>
@@ -1035,19 +1109,21 @@ function exportMd() {
   a.click(); URL.revokeObjectURL(a.href);
 }
 $('#btn-export').addEventListener('click', exportMd);
-function showToast(msg){const t=$('#summary-toast');t.textContent='⏳ '+msg;t.classList.add('show')}
+function showToast(msg){const t=$('#summary-toast');t.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;display:inline-block;vertical-align:-2px;margin-right:5px"><circle cx="12" cy="12" r="10" stroke-dasharray="40 60" style="animation:spin 1.2s linear infinite"></circle></svg>'+msg;t.classList.add('show')}
 function hideToast(){$('#summary-toast').classList.remove('show')}
 
 /* Theme */
+const ICON_SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>';
+const ICON_MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
 (function(){
   const saved=localStorage.getItem('theme');
   const prefers=window.matchMedia('(prefers-color-scheme: dark)').matches;
-  if(saved==='dark'||(!saved&&prefers)){document.documentElement.setAttribute('data-theme','dark');$('#btn-theme').textContent='☀️'}
+  if(saved==='dark'||(!saved&&prefers)){document.documentElement.setAttribute('data-theme','dark');$('#ico-theme').innerHTML=ICON_SUN}
 })();
 function toggleTheme(){
   const isDark=document.documentElement.getAttribute('data-theme')==='dark';
-  if(isDark){document.documentElement.removeAttribute('data-theme');$('#btn-theme').textContent='🌙';localStorage.setItem('theme','light')}
-  else{document.documentElement.setAttribute('data-theme','dark');$('#btn-theme').textContent='☀️';localStorage.setItem('theme','dark')}
+  if(isDark){document.documentElement.removeAttribute('data-theme');$('#ico-theme').innerHTML=ICON_MOON;localStorage.setItem('theme','light')}
+  else{document.documentElement.setAttribute('data-theme','dark');$('#ico-theme').innerHTML=ICON_SUN;localStorage.setItem('theme','dark')}
 }
 
 function updatePlatformBadge(platform=''){
@@ -1065,7 +1141,7 @@ function updatePlatformBadge(platform=''){
 // 回显代理
 (async()=>{try{const r=await fetch('/api/proxy');const d=await r.json();if(d.proxy)$('#settings-proxy-input').value=d.proxy}catch(e){}})();
 // 回显 Cookie 状态
-(async()=>{try{const r=await fetch('/api/cookies');const d=await r.json();if(d.has_cookie){$("#settings-cookie-input").placeholder='已保存 '+d.count+' 个 Cookie';$('#settings-cookie-msg').textContent='✅ 已保存 '+d.count+' 个 Cookie';$('#settings-cookie-msg').style.color='var(--success)'}}catch(e){}})();
+(async()=>{try{const r=await fetch('/api/cookies');const d=await r.json();if(d.has_cookie){$("#settings-cookie-input").placeholder='已保存 '+d.count+' 个 Cookie';$('#settings-cookie-msg').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;display:inline-block;vertical-align:-1px;margin-right:4px"><polyline points="20 6 9 17 4 12"/></svg>已保存 '+d.count+' 个 Cookie';$('#settings-cookie-msg').style.color='var(--success)'}}catch(e){}})();
 // 标题悬停提示
 $('#video-title').addEventListener('mouseenter',()=>{
   const tip=$('#title-tip'),t=$('#video-title');
@@ -1161,8 +1237,8 @@ $('#settings-cookie-save').addEventListener('click',async()=>{
     const r = await fetch('/api/cookies',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cookie:raw})});
     const d = await r.json();
     if(d.status==='success'){msg.textContent='✅ '+d.message+'，即时生效';msg.style.color='var(--success)';$("#settings-cookie-input").placeholder='已保存 Cookie';_cookieCached=null}
-    else{msg.textContent='❌ '+d.error;msg.style.color='var(--error)'}
-  }catch(e){msg.textContent='❌ 保存失败';msg.style.color='var(--error)'}
+    else{msg.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;display:inline-block;vertical-align:-1px;margin-right:4px"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'+d.error;msg.style.color='var(--error)'}
+  }catch(e){msg.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;display:inline-block;vertical-align:-1px;margin-right:4px"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>保存失败';msg.style.color='var(--error)'}
 });
 
 // 代理保存
@@ -1174,8 +1250,8 @@ $('#settings-proxy-save').addEventListener('click',async()=>{
     const r = await fetch('/api/proxy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({proxy:raw})});
     const d = await r.json();
     if(d.status==='success'){msg.textContent='✅ 已保存，即时生效';msg.style.color='var(--success)'}
-    else{msg.textContent='❌ '+d.error;msg.style.color='var(--error)'}
-  }catch(e){msg.textContent='❌ 保存失败';msg.style.color='var(--error)'}
+    else{msg.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;display:inline-block;vertical-align:-1px;margin-right:4px"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'+d.error;msg.style.color='var(--error)'}
+  }catch(e){msg.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;display:inline-block;vertical-align:-1px;margin-right:4px"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>保存失败';msg.style.color='var(--error)'}
 });
 
 /* Modal - Transcript */
@@ -1362,7 +1438,9 @@ $('#chat-overlay').addEventListener('click',e=>{if(e.target===$('#chat-overlay')
 $('#chat-max').addEventListener('click',()=>{
   const m=$('.chat-modal');
   m.classList.toggle('maximized');
-  $('#chat-max').textContent=m.classList.contains('maximized')?'⛷':'⛶';
+  $('#chat-max').innerHTML=m.classList.contains('maximized')
+    ?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M9 3v6H3M15 21v-6h6M3 9l6-6M21 15l-6 6"/></svg>'
+    :'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M3 7V3h4M21 7V3h-4M3 17v4h4M21 17v4h-4"/></svg>';
   setTimeout(()=>{const b=$('#chat-body');b.scrollTop=b.scrollHeight},100);
 });
 

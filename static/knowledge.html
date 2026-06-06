@@ -7,43 +7,55 @@
 <title>知识库 - B站视频总结</title>
 <style>
 :root {
-  --bg: #F8F9FB; --surface: #FFFFFF; --text: #1E293B; --text-sec: #64748B;
-  --text-muted: #94A3B8; --border: #E2E8F0; --pink: #EC4899;
-  --purple: #8B5CF6; --radius: 12px; --font: -apple-system, "Noto Sans SC", sans-serif;
-  --error: #EF4444;
+  --bg: #F6F7F9; --surface: #FFFFFF; --text: #0F172A; --text-sec: #64748B;
+  --text-muted: #94A3B8; --border: #E8ECF0; --border-strong: #D1D5DB;
+  --pink: #FB7299; --pink-light: #FFF0F4; --pink-dark: #D94A70;
+  --purple: #8B5CF6; --indigo: #6366F1; --indigo-light: #EEF2FF;
+  --blue: #3B82F6; --violet: #8B5CF6; --violet-light: #F5F3FF;
+  --success: #10B981; --error: #EF4444; --error-bg: #FEF2F2;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.04);
+  --shadow: 0 1px 3px rgba(0,0,0,.05), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,.08);
+  --radius: 14px; --radius-sm: 9px;
+  --ease: cubic-bezier(.4, 0, .2, 1);
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 }
 [data-theme="dark"] {
   --bg: #0B1120; --surface: #1A2332; --text: #E2E8F0; --text-sec: #94A3B8;
-  --text-muted: #64748B; --border: #2D3A4A; --error: #F87171;
+  --text-muted: #64748B; --border: #2D3A4A; --border-strong: #3D4F63;
+  --pink-light: rgba(251,114,153,.12); --indigo-light: rgba(99,102,241,.15);
+  --violet-light: rgba(139,92,246,.15); --error: #F87171; --error-bg: rgba(239,68,68,.12);
 }
 [data-theme="dark"] body { background: var(--bg); color: var(--text); }
-[data-theme="dark"] .nav a:hover { background: #1E293B; }
-[data-theme="dark"] .panel-head input { background: #111827; }
+[data-theme="dark"] .nav a:hover, [data-theme="dark"] .session-item:hover { background: #1E293B; }
+[data-theme="dark"] .panel-head input, [data-theme="dark"] .chat-foot textarea { background: #111827; }
 [data-theme="dark"] .modal { background: var(--surface); }
 [data-theme="dark"] .modal-body { color: var(--text); }
 [data-theme="dark"] .overlay { background: rgba(0,0,0,.7); }
-[data-theme="dark"] .kbd { background: #1E293B; }
 [data-theme="dark"] .kb-close { background: #1E293B; }
 [data-theme="dark"] .kb-close:hover { background: rgba(239,68,68,.15); }
 [data-theme="dark"] .msg.user { background: #1E293B; color: var(--text); }
 [data-theme="dark"] .msg.ai .content { background: var(--surface); border-color: var(--border); box-shadow: none; }
 [data-theme="dark"] .msg.ai .source-tag { background: rgba(139,92,246,.15); }
-[data-theme="dark"] .main { background: var(--bg); }
 [data-theme="dark"] .main { background: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%); }
 [data-theme="dark"] .video-item:hover { background: #1E293B; }
-[data-theme="dark"] .video-item.active { background: rgba(139,92,246,.15); border-left-color: var(--purple); color: var(--text); }
-[data-theme="dark"] .session-item:hover { background: #1E293B; }
-[data-theme="dark"] .session-item.active { background: rgba(139,92,246,.15); border-left-color: var(--purple); color: var(--text); }
+[data-theme="dark"] .video-item.active, [data-theme="dark"] .session-item.active { background: var(--indigo-light); border-left-color: var(--indigo); }
 [data-theme="dark"] .load-more:hover { background: rgba(139,92,246,.1); }
+[data-theme="dark"] .chat-foot button { background: var(--indigo); }
+[data-theme="dark"] .chat-foot button:hover { background: #4F46E5; }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: var(--font); background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; }
 a { color: var(--pink); text-decoration: none; }
 
 /* Nav */
 .nav { display: flex; align-items: center; padding: 10px 20px; background: var(--surface); border-bottom: 1px solid var(--border); gap: 12px; flex-shrink: 0; }
-.nav h1 { font-size: 16px; font-weight: 800; margin-right: auto; color: var(--purple); }
-.nav a { font-size: 13px; color: var(--text-sec); padding: 6px 12px; border-radius: 8px; transition: .2s; }
-.nav a:hover { background: #F1F5F9; color: var(--text); }
+.nav h1 { font-size: 16px; font-weight: 800; margin-right: auto; color: var(--indigo); display: flex; align-items: center; gap: 8px; }
+.nav h1 svg { width: 22px; height: 22px; }
+.nav a { font-size: 13px; color: var(--text-sec); padding: 6px 12px; border-radius: 8px; transition: all .18s var(--ease); text-decoration: none; }
+.nav a:hover { background: var(--bg-elevated, #F1F5F9); color: var(--text); }
+.nav button { border: 1.5px solid var(--border); border-radius: 6px; padding: 5px 8px; font-size: 13px; cursor: pointer; background: transparent; color: var(--text-sec); transition: all .18s var(--ease); display: inline-flex; align-items: center; gap: 4px; }
+.nav button:hover { border-color: var(--indigo); color: var(--indigo); background: var(--indigo-light); }
+.nav button svg { width: 14px; height: 14px; }
 
 /* Layout */
 .layout { display: flex; flex: 1; overflow: hidden; }
@@ -51,37 +63,43 @@ a { color: var(--pink); text-decoration: none; }
 /* Sidebar */
 .sidebar { width: 300px; min-width: 260px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
 .sidebar-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-.sidebar-tab { flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text-muted); border-bottom: 2px solid transparent; transition: .2s; }
-.sidebar-tab.active { color: var(--purple); border-bottom-color: var(--purple); }
+.sidebar-tab { flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text-muted); border-bottom: 2px solid transparent; transition: all .18s var(--ease); display: flex; align-items: center; justify-content: center; gap: 5px; }
+.sidebar-tab svg { width: 14px; height: 14px; flex-shrink: 0; }
+.sidebar-tab.active { color: var(--indigo); border-bottom-color: var(--indigo); }
+.sidebar-tab:hover:not(.active) { color: var(--text-sec); }
 .sidebar-panel { display: none; flex: 1; flex-direction: column; overflow: hidden; }
 .sidebar-panel.active { display: flex; }
 .panel-head { padding: 12px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.panel-head input { flex: 1; padding: 7px 10px; border: 1.5px solid var(--border); border-radius: 7px; font-size: 12px; font-family: var(--font); outline: none; background: var(--bg); }
-.panel-head input:focus { border-color: var(--purple); }
-.panel-head button { font-size: 12px; border: 1.5px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; background: var(--bg); color: var(--pink); white-space: nowrap; }
+.panel-head input { flex: 1; padding: 7px 10px; border: 1.5px solid var(--border); border-radius: 7px; font-size: 12px; font-family: var(--font); outline: none; background: var(--bg); transition: all .18s var(--ease); }
+.panel-head input:focus { border-color: var(--indigo); box-shadow: 0 0 0 3px rgba(99,102,241,.08); }
+.panel-head button { font-size: 12px; border: 1.5px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; background: var(--bg); color: var(--pink); white-space: nowrap; transition: all .18s var(--ease); }
+.panel-head button:hover { border-color: var(--pink); background: var(--pink-light); }
 .panel-count { font-size: 12px; color: var(--text-muted); padding: 6px 14px; flex-shrink: 0; }
 
 /* Video list */
 .video-list, .chat-session-list { flex: 1; overflow-y: auto; }
-.load-more { display: block; width: 100%; padding: 10px; text-align: center; font-size: 12px; color: var(--purple); cursor: pointer; background: none; border: none; border-top: 1px solid var(--border); }
-.load-more:hover { background: #F5F3FF; }
+.load-more { display: block; width: 100%; padding: 10px; text-align: center; font-size: 12px; color: var(--indigo); cursor: pointer; background: none; border: none; border-top: 1px solid var(--border); transition: all .18s var(--ease); }
+.load-more:hover { background: var(--indigo-light); }
 .load-more:disabled { color: var(--text-muted); cursor: default; }
 
-.video-item { padding: 12px 14px; cursor: pointer; display: flex; align-items: center; gap: 10px; border-left: 3px solid transparent; transition: .15s; }
-.video-item:hover { background: #F1F5F9; }
-.video-item.active { background: #F5F3FF; border-left-color: var(--purple); }
+.video-item { padding: 12px 14px; cursor: pointer; display: flex; align-items: center; gap: 10px; border-left: 3px solid transparent; transition: all .18s var(--ease); }
+.video-item:hover { background: var(--bg-elevated, #F1F5F9); }
+.video-item.active { background: var(--indigo-light); border-left-color: var(--indigo); }
+.video-item.active .vi-title { color: var(--indigo); }
 .video-item .vi-thumb { width: 56px; height: 32px; border-radius: 5px; object-fit: cover; background: var(--border); flex-shrink: 0; }
 .video-item .vi-info { flex: 1; min-width: 0; }
 .video-item .vi-title { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .video-item .vi-meta { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
 
 /* Chat session item */
-.session-item { padding: 10px 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; border-left: 3px solid transparent; transition: .15s; }
-.session-item:hover { background: #F1F5F9; }
-.session-item.active { background: #F5F3FF; border-left-color: var(--purple); font-weight: 600; }
+.session-item { padding: 10px 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; border-left: 3px solid transparent; transition: all .18s var(--ease); }
+.session-item:hover { background: var(--bg-elevated, #F1F5F9); }
+.session-item.active { background: var(--indigo-light); border-left-color: var(--indigo); font-weight: 600; color: var(--indigo); }
 .session-item .si-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; }
-.session-item .si-del { opacity: 0; font-size: 11px; color: #EF4444; cursor: pointer; padding: 2px 4px; }
+.session-item .si-del { opacity: 0; font-size: 12px; color: var(--error); cursor: pointer; padding: 2px 4px; border-radius: 4px; transition: all .18s var(--ease); display: inline-flex; align-items: center; justify-content: center; }
+.session-item .si-del svg { width: 12px; height: 12px; }
 .session-item:hover .si-del { opacity: 1; }
+.session-item .si-del:hover { background: var(--error-bg); }
 
 /* Main chat - Doubao style */
 .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
@@ -106,8 +124,8 @@ a { color: var(--pink); text-decoration: none; }
 .msg.ai strong { color: var(--pink); font-weight: 700; }
 .msg.ai ul, .msg.ai ol { padding-left: 24px; margin: 12px 0; }
 .msg.ai li { margin: 6px 0; line-height: 1.7; }
-.msg.ai .source-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--purple); background: #F5F3FF; padding: 4px 12px; border-radius: 6px; margin: 12px 8px 0 0; font-weight: 600; cursor: pointer; transition: .15s; }
-.msg.ai .source-tag:hover { background: #EDE9FE; transform: translateY(-1px); }
+.msg.ai .source-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--indigo); background: var(--indigo-light); padding: 4px 12px; border-radius: 6px; margin: 12px 8px 0 0; font-weight: 600; cursor: pointer; transition: all .18s var(--ease); }
+.msg.ai .source-tag:hover { background: #D4D4FA; transform: translateY(-1px); }
 
 
 
@@ -119,9 +137,10 @@ a { color: var(--pink); text-decoration: none; }
 .chat-foot textarea { flex: 1; padding: 14px 18px; border: 1.5px solid var(--border); border-radius: 18px; font-size: 15px; font-family: var(--font); outline: none; resize: none; min-height: 48px; max-height: 140px; background: var(--bg); transition: .2s; line-height: 1.5; }
 .chat-foot textarea:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(139,92,246,.08); }
 .chat-foot textarea::placeholder { color: var(--text-muted); }
-.chat-foot button { padding: 0 24px; border: none; border-radius: 18px; background: var(--purple); color: white; font-size: 15px; font-weight: 600; cursor: pointer; transition: .15s; white-space: nowrap; align-self: flex-end; height: 48px; }
-.chat-foot button:hover { background: #7C3AED; }
-.chat-foot button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+.chat-foot button { padding: 0 24px; border: none; border-radius: 18px; background: var(--indigo); color: white; font-size: 15px; font-weight: 600; cursor: pointer; transition: all .18s var(--ease); white-space: nowrap; align-self: flex-end; height: 48px; display: inline-flex; align-items: center; gap: 6px; }
+.chat-foot button svg { width: 15px; height: 15px; }
+.chat-foot button:hover { background: #4F46E5; transform: translateY(-1px); }
+.chat-foot button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; transform: none; }
 
 @media (max-width: 700px) { 
   .sidebar { display: none; } 
@@ -149,19 +168,35 @@ a { color: var(--pink); text-decoration: none; }
 <body>
 
 <div class="nav">
-  <h1>🧠 知识库</h1>
+  <h1>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+    </svg>
+    知识库
+  </h1>
   <a href="/" style="font-weight:600">← 返回首页</a>
   <span style="font-size:12px;color:var(--text-muted)">跨视频语义检索问答</span>
-  <button id="btn-theme" title="切换深色/浅色模式" onclick="toggleTheme()" style="margin-left:auto;border:1.5px solid var(--border);border-radius:6px;padding:4px 8px;font-size:14px;cursor:pointer;background:transparent">🌙</button>
+  <button id="btn-theme" title="切换深色/浅色模式" onclick="toggleTheme()" aria-label="切换主题">
+    <svg id="ico-theme" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  </button>
 </div>
 
 <div class="layout">
   <!-- Sidebar -->
   <div class="sidebar">
     <div class="sidebar-tabs">
-      <div class="sidebar-tab" onclick="switchTab('videos')">📺 视频库</div>
-      <div class="sidebar-tab" onclick="switchTab('articles')">📄 文本库</div>
-      <div class="sidebar-tab active" onclick="switchTab('chats')">💬 对话</div>
+      <div class="sidebar-tab" onclick="switchTab('videos')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="15" height="14" rx="2"/><polygon points="22 7 17 12 22 17 22 7"/></svg>
+        视频库
+      </div>
+      <div class="sidebar-tab" onclick="switchTab('articles')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+        文本库
+      </div>
+      <div class="sidebar-tab active" onclick="switchTab('chats')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        对话
+      </div>
     </div>
 
     <!-- Videos panel -->
@@ -211,7 +246,10 @@ a { color: var(--pink); text-decoration: none; }
     <div class="chat-foot-wrap">
       <div class="chat-foot">
         <textarea id="question-input" placeholder="向 AI 提问..." rows="1"></textarea>
-        <button id="send-btn">发送</button>
+        <button id="send-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          发送
+        </button>
       </div>
     </div>
   </div>
@@ -222,15 +260,17 @@ const $=s=>document.querySelector(s);
 const body=$('#chat-body'),scrollEl=$('#chat-scroll'),inp=$('#question-input'),btn=$('#send-btn'),empty=$('#empty-state');
 
 /* Theme */
+const ICON_SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>';
+const ICON_MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
 (function(){
   const saved=localStorage.getItem('theme');
   const prefers=window.matchMedia('(prefers-color-scheme: dark)').matches;
-  if(saved==='dark'||(!saved&&prefers)){document.documentElement.setAttribute('data-theme','dark');$('#btn-theme').textContent='☀️'}
+  if(saved==='dark'||(!saved&&prefers)){document.documentElement.setAttribute('data-theme','dark');$('#ico-theme').innerHTML=ICON_SUN}
 })();
 function toggleTheme(){
   const isDark=document.documentElement.getAttribute('data-theme')==='dark';
-  if(isDark){document.documentElement.removeAttribute('data-theme');$('#btn-theme').textContent='🌙';localStorage.setItem('theme','light')}
-  else{document.documentElement.setAttribute('data-theme','dark');$('#btn-theme').textContent='☀️';localStorage.setItem('theme','dark')}
+  if(isDark){document.documentElement.removeAttribute('data-theme');$('#ico-theme').innerHTML=ICON_MOON;localStorage.setItem('theme','light')}
+  else{document.documentElement.setAttribute('data-theme','dark');$('#ico-theme').innerHTML=ICON_SUN;localStorage.setItem('theme','dark')}
 }
 
 let allVideos=[],vp=1,vHasMore=true,vLoading=false;
@@ -267,8 +307,8 @@ function closeVideoPreview(){
 
 /* ═══ Tab switching ═══ */
 function switchTab(tab){
-  const labelMap = {videos:'视频', articles:'文本', chats:'对话'};
-  document.querySelectorAll('.sidebar-tab').forEach(t=>t.classList.toggle('active',t.textContent.includes(labelMap[tab]||'')));
+  const labelMap = {videos:'视频库', articles:'文本库', chats:'对话'};
+  document.querySelectorAll('.sidebar-tab').forEach(t=>t.classList.toggle('active',(t.textContent||'').includes(labelMap[tab]||'')));
   document.querySelectorAll('.sidebar-panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+tab));
 }
 
@@ -423,7 +463,7 @@ function renderSessionList(list, activeId){
     const div=document.createElement('div');
     div.className='session-item'+(c.id===activeId?' active':'');
     div.setAttribute('data-id',c.id);
-    div.innerHTML=`<span class="si-text" title="${escHtml(c.title||'')}">${escHtml(c.title||c.id)}</span><span class="si-del">✕</span>`;
+    div.innerHTML=`<span class="si-text" title="${escHtml(c.title||'')}">${escHtml(c.title||c.id)}</span><span class="si-del" title="删除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>`;
     div.querySelector('.si-text').onclick=()=>kbSwitchChat(c.id);
     div.querySelector('.si-del').onclick=(e)=>{e.stopPropagation();if(confirm('删除此对话？'))deleteKbChat(c.id)};
     sl.appendChild(div);
@@ -451,7 +491,7 @@ async function saveKbChat(){
       const div=document.createElement('div');
       div.className='session-item';
       div.setAttribute('data-id',sid);
-      div.innerHTML=`<span class="si-text">${escHtml(title)}</span><span class="si-del">✕</span>`;
+      div.innerHTML=`<span class="si-text">${escHtml(title)}</span><span class="si-del" title="删除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>`;
       sl.insertBefore(div,sl.firstChild);
     }
   }catch(e){}
@@ -525,7 +565,7 @@ async function sendQuestion(){
       let bodyHtml = marked.parse(d.reply);
       let sourcesHtml = '';
       if(d.sources&&d.sources.length){
-        sourcesHtml='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted)">📂 参考：';
+        sourcesHtml='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;vertical-align:-2px;margin-right:5px"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>参考：';
         d.sources.forEach(s=>sourcesHtml+=`<span class="source-tag" data-vid="${s.vid}" data-type="${s.type||'video'}">${escHtml(s.title)}</span>`);
         sourcesHtml+='</div>';
       }
